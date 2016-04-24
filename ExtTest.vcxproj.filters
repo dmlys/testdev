@@ -1,0 +1,58 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="main.cpp" />
+    <ClCompile Include="extlib\tests\codecvt_conv_tests.cpp">
+      <Filter>tests</Filter>
+    </ClCompile>
+    <ClCompile Include="extlib\tests\TestMain.cpp">
+      <Filter>tests</Filter>
+    </ClCompile>
+    <ClCompile Include="extlib\tests\lurcache_test.cpp">
+      <Filter>tests</Filter>
+    </ClCompile>
+    <ClCompile Include="extlib\tests\utf8utils_test.cpp">
+      <Filter>tests</Filter>
+    </ClCompile>
+    <ClCompile Include="extlib\tests\algorithm_tests.cpp">
+      <Filter>tests</Filter>
+    </ClCompile>
+    <ClCompile Include="extlib\tests\zip_iterator_test.cpp">
+      <Filter>tests</Filter>
+    </ClCompile>
+    <ClCompile Include="extlib\tests\itoa_test.cpp">
+      <Filter>tests</Filter>
+    </ClCompile>
+    <ClCompile Include="extlib\tests\line_reader_test.cpp">
+      <Filter>tests</Filter>
+    </ClCompile>
+    <ClCompile Include="extlib\tests\transform_width_tests.cpp">
+      <Filter>tests</Filter>
+    </ClCompile>
+    <ClCompile Include="extlib\tests\test_files.cpp">
+      <Filter>tests</Filter>
+    </ClCompile>
+    <ClCompile Include="extlib\tests\ctpred_tests.cpp">
+      <Filter>tests</Filter>
+    </ClCompile>
+    <ClCompile Include="extlib\tests\socket_streambuf_base_test.cpp">
+      <Filter>tests</Filter>
+    </ClCompile>
+    <ClCompile Include="extlib\tests\string_interpolation_test.cpp">
+      <Filter>tests</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="tests">
+      <UniqueIdentifier>{1e687890-715c-4062-a19e-38e715778b2e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="perf_tests">
+      <UniqueIdentifier>{e5821afc-cdaf-4d56-bc7e-5f1537d96b24}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="extlib\tests\test_files.h">
+      <Filter>tests</Filter>
+    </ClInclude>
+  </ItemGroup>
+</Project>

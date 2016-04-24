@@ -1,0 +1,6 @@
+[submodule "extlib"]
+	path = extlib
+	url = ../extlib.git
+[submodule "msbuild-def"]
+	path = msbuild-def
+	url = ../msbuild-def.git

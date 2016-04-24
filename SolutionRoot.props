@@ -1,0 +1,17 @@
+<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ImportGroup Label="PropertySheets">
+    <Import Project="$(SolutionDir)msbuild-def/release.props" Condition="$(Configuration) == 'Release'" />
+    <Import Project="$(SolutionDir)msbuild-def/debug.props" Condition="$(Configuration) == 'Debug'" />
+    <Import Project="$(SolutionDir)msbuild-def/unittests.props" Condition="$(Configuration) == 'UnitTests'" />
+  </ImportGroup>
+  
+  <ItemDefinitionGroup>
+    <ClCompile>
+      <AdditionalIncludeDirectories>$(SolutionDir)extlib\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>      
+      <PreprocessorDefinitions>_SCL_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+    <Link>
+      <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+    </Link>
+  </ItemDefinitionGroup>
+</Project>
