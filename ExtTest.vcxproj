@@ -52,6 +52,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="cow_string.cpp" />
     <ClCompile Include="extlib\tests\algorithm_tests.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)'!='UnitTests'">true</ExcludedFromBuild>
     </ClCompile>
@@ -101,9 +102,11 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="cow_string.hpp" />
     <ClInclude Include="extlib\tests\test_files.h">
       <ExcludedFromBuild Condition="'$(Configuration)'!='UnitTests'">true</ExcludedFromBuild>
     </ClInclude>
+    <ClInclude Include="intrusive_cow_ptr.hpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

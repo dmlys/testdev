@@ -1,45 +1,62 @@
 #include <iostream>
 #include <sstream>
 #include <fstream>
+#include <xstring>
 #include <string>
-#include <vector>
-#include <map>
+//#include <vector>
+//#include <map>
+//
+//#include <csignal>
+//
 
-#include <csignal>
+#include "intrusive_cow_ptr.hpp"
+#include "cow_string.hpp"
+#include <ext/strings/basic_string_facade.hpp>
+#include <ext/strings/basic_string_facade_integration.hpp>
 
-#include <ext/Errors.hpp>
-#include <ext/iostreams/socket_stream.hpp>
+#include <ext/strings/compact_string.hpp>
 
+typedef ext::basic_string_facade<
+	ext::cow_string, std::char_traits<char>
+> cow_string;
+
+
+struct Base {};
+struct Derived : Base {};
 
 int main()
 {
 	using namespace std;
 	
+	typedef cow_string string;
+	//typedef std::string string;
+	//typedef ext::compact_string string;
 
-	ext::socket_stream_init();
-	ext::socket_stream ss;
-	ss.exceptions(std::ios::failbit | std::ios::badbit);
+	std::string repl = "extxxx";
+	string ss = "test str";
+	ss.replace(ss.data() + 1, ss.data() + 4, repl.begin(), repl.end());
+	//ss.replace(1, 3, 4, 'x');
+	//ss.replace(1, 3, string("e"));
 
-	try {
-		ss.connect("httpbin.org", "http");
-		//ss.start_ssl();
+	cout << ss << endl;
+	cout << ss.use_count() << endl;
 
-		ss << "GET /get HTTP/1.1\r\n"
-			<< "Host: httpbin.org\r\n"
-			<< "Connection: close\r\n"
-			<< "";
+	auto p = ss;
+	auto z = p;
 
+	cout << z.use_count() << endl;
 
-		std::string line;
-		ss >> line;
-		cout << ss.rdbuf() << endl;
-	}
+	z[0] = '0';
+	cout << z.use_count() << endl;
+	cout << z << endl;
+	cout << p.use_count() << endl;
+	cout << p << endl;
 
-	catch (std::ios::failure &)
-	{
-		cerr << ext::FormatError(ss.last_error()) << endl;
-	}
+	z += ss;
+	cout << z << endl;
+
+	cout << ss.use_count() << endl;
+
 
 	return 0;
 }
-
