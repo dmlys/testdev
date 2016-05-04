@@ -1,27 +1,30 @@
 #pragma once
 #include <cstddef>
-#include <utility>
 #include <limits>
-#include <atomic>
-#include <boost/config.hpp>
 
-#include "intrusive_cow_ptr.hpp"
+#include <boost/config.hpp>
+#include <ext/intrusive_cow_ptr.hpp>
 
 namespace ext
 {
-	class cow_string
+	class cow_string_body
 	{
 	private:
-		typedef cow_string      self_type;			
+		typedef cow_string_body      self_type;			
 
-		struct heap_body : ext::cow_plain_base<heap_body>
+		struct heap_body
 		{
+			unsigned refs = 0;
 			std::size_t size;
 			std::size_t capacity;
 			char buffer[1];
 		};
 
-		friend heap_body * intrusive_ptr_clone(heap_body * ptr);
+		friend inline      void intrusive_ptr_add_ref(heap_body * ptr) noexcept   { ++ptr->refs; }
+		friend inline      void intrusive_ptr_release(heap_body * ptr) noexcept   { if (--ptr->refs == 0) delete ptr; }
+		friend inline  unsigned intrusive_ptr_use_count(const heap_body * ptr) noexcept { return ptr->refs; }
+		friend inline heap_body * intrusive_ptr_default(const heap_body * ptr) noexcept { intrusive_ptr_add_ref(&ms_shared_null); return &ms_shared_null; }
+		friend void intrusive_ptr_clone(const heap_body * ptr, heap_body * & dest);
 
 	public:		
 		typedef char value_type;
@@ -74,40 +77,37 @@ namespace ext
 
 		inline static void set_eos(value_type * pos) { *pos = 0; }
 
-	private:
-		cow_string(heap_body * body) : m_body(body) {}
-
 	public:
-		cow_string() : cow_string(&ms_shared_null) {};
-		~cow_string() = default;
+		cow_string_body() = default;
+		~cow_string_body() = default;
 
-		//cow_string(const self_type &) = default;
-		//cow_string(self_type &&) = default;
-		//cow_string & operator =(const self_type &) = default;
-		//cow_string & operator =(self_type &&) = default;
+		//cow_string_body(const self_type &) = default;
+		//cow_string_body(self_type &&) = default;
+		//cow_string_body & operator =(const self_type &) = default;
+		//cow_string_body & operator =(self_type &&) = default;
 
 		friend void swap(self_type & s1, self_type & s2) { swap(s1, s2); }
 	};
 
-	inline auto cow_string::data_end() noexcept -> value_type *
+	inline auto cow_string_body::data_end() noexcept -> value_type *
 	{
 		auto & body = *m_body;
 		return body.buffer + body.size;
 	}
 
-	inline auto cow_string::data_end() const noexcept -> const value_type * 
+	inline auto cow_string_body::data_end() const noexcept -> const value_type * 
 	{
 		auto & body = *m_body;
 		return body.buffer + body.size;
 	}
 
-	inline auto cow_string::range() noexcept -> range_type
+	inline auto cow_string_body::range() noexcept -> range_type
 	{
 		auto & body = *m_body;
 		return {body.buffer, body.buffer + body.size};
 	}
 
-	inline auto cow_string::range() const noexcept -> const_range_type
+	inline auto cow_string_body::range() const noexcept -> const_range_type
 	{
 		auto & body = *m_body;
 		return {body.buffer, body.buffer + body.size};

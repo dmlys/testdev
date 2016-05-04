@@ -1,7 +1,6 @@
 #include <iostream>
 #include <sstream>
 #include <fstream>
-#include <xstring>
 #include <string>
 //#include <vector>
 //#include <map>
@@ -9,54 +8,67 @@
 //#include <csignal>
 //
 
-#include "intrusive_cow_ptr.hpp"
-#include "cow_string.hpp"
+#include <ext/intrusive_cow_ptr.hpp>
+#include "cow_string_body.hpp"
 #include <ext/strings/basic_string_facade.hpp>
 #include <ext/strings/basic_string_facade_integration.hpp>
 
 #include <ext/strings/compact_string.hpp>
+#include <boost/smart_ptr/intrusive_ptr.hpp>
 
 typedef ext::basic_string_facade<
-	ext::cow_string, std::char_traits<char>
+	ext::cow_string_body, std::char_traits<char>
 > cow_string;
 
+struct TV : ext::intrusive_cow_plain_counter<TV>
+{
+	std::string str;
+	
+	virtual ~TV() { std::cout << "TV\n"; }
+	virtual TV * clone(const TV * tv) const { return new TV(*tv); }
 
-struct Base {};
-struct Derived : Base {};
+	friend unsigned intrusive_ptr_release(TV * ptr)
+	{
+		intrusive_ptr_release(static_cast<ext::intrusive_cow_plain_counter<TV> *>(ptr));
+		return 0;
+	}
+
+	template <class Type>
+	friend void intrusive_ptr_clone(const TV * ptr, Type * & dest)
+	{
+		dest = static_cast<Type *>(ptr->clone(ptr));
+	}
+};
+
+struct Higher : TV
+{
+	int clop;
+
+	virtual ~Higher() { std::cout << "Higher\n"; }
+	virtual Higher * clone(const TV * tv) const override { return new Higher(static_cast<const Higher &>(*tv)); }
+};
 
 int main()
 {
-	using namespace std;
-	
-	typedef cow_string string;
-	//typedef std::string string;
-	//typedef ext::compact_string string;
+	using namespace std;	
 
-	std::string repl = "extxxx";
-	string ss = "test str";
-	ss.replace(ss.data() + 1, ss.data() + 4, repl.begin(), repl.end());
-	//ss.replace(1, 3, 4, 'x');
-	//ss.replace(1, 3, string("e"));
+	ext::intrusive_cow_ptr<Higher> thp;
+	thp.reset(new Higher);
 
-	cout << ss << endl;
-	cout << ss.use_count() << endl;
+	auto c = thp.use_count();
+	cout << sizeof(thp) << endl;
+	cout << typeid(c).name() << endl;
 
-	auto p = ss;
-	auto z = p;
+	ext::intrusive_cow_ptr<TV> tvp = thp;
 
-	cout << z.use_count() << endl;
+	ext::dynamic_pointer_cast<Higher>(tvp);
 
-	z[0] = '0';
-	cout << z.use_count() << endl;
-	cout << z << endl;
-	cout << p.use_count() << endl;
-	cout << p << endl;
+	thp.detach();
+	tvp.detach();
+	auto r = thp.release();
+	r = thp.reset();
 
-	z += ss;
-	cout << z << endl;
-
-	cout << ss.use_count() << endl;
-
+	cow_string ss = "123";
 
 	return 0;
 }

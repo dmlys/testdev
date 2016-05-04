@@ -41,7 +41,7 @@
     <ClCompile Include="extlib\tests\string_interpolation_test.cpp">
       <Filter>tests</Filter>
     </ClCompile>
-    <ClCompile Include="cow_string.cpp" />
+    <ClCompile Include="cow_string_body.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="tests">
@@ -55,7 +55,6 @@
     <ClInclude Include="extlib\tests\test_files.h">
       <Filter>tests</Filter>
     </ClInclude>
-    <ClInclude Include="cow_string.hpp" />
-    <ClInclude Include="intrusive_cow_ptr.hpp" />
+    <ClInclude Include="cow_string_body.hpp" />
   </ItemGroup>
 </Project>
