@@ -19,7 +19,7 @@ namespace ext
 	}
 
 	static cow_string_body::size_type increase_size(cow_string_body::size_type cursize,
-	                                           cow_string_body::size_type incsize)
+	                                                cow_string_body::size_type incsize)
 	{
 		incsize = cursize + incsize;
 		// overflow or more than max_size
@@ -43,6 +43,11 @@ namespace ext
 		return const_cast<value_type *>(m_body->buffer);
 	}
 
+	BOOST_FORCEINLINE auto cow_string_body::mutable_bufend() const noexcept -> value_type *
+	{
+		return const_cast<value_type *>(m_body->buffer + m_body->size);
+	}
+
 	inline auto cow_string_body::alloc_body(std::nothrow_t, size_type cap) -> heap_body * 
 	{
 		cap += sizeof(size_type) * 3 + 1; // 1 for null terminator
@@ -61,15 +66,14 @@ namespace ext
 
 	void intrusive_ptr_clone(const cow_string_body::heap_body * ptr, cow_string_body::heap_body * & body)
 	{
-		auto cap = sizeof(cow_string_body::size_type) * 3 + ptr->capacity + 1; // 1 for null terminator
+		auto cap = sizeof(cow_string_body::size_type) * 3 + ptr->size + 1; // 1 for null terminator
 		body = reinterpret_cast<cow_string_body::heap_body *>(new char[cap]);
 		new (body) cow_string_body::heap_body;
 
-		body->capacity = ptr->capacity;
-		body->size = ptr->size;
+		body->capacity = body->size = ptr->size;
 		std::memcpy(body->buffer, ptr->buffer, ptr->size);
 
-		intrusive_ptr_add_ref(body);		
+		intrusive_ptr_add_ref(body);
 	}
 
 	auto cow_string_body::alloc_body_adjusted(const heap_body & body, size_type newcap) -> heap_body *
@@ -111,7 +115,7 @@ namespace ext
 			m_body.reset(newbody);
 		}
 
-		set_eos(mutable_buffer());
+		set_eos(mutable_bufend());
 	}
 
 
@@ -125,7 +129,7 @@ namespace ext
 		auto * newbody = alloc_body_adjusted(oldbody, newcap);
 		m_body.reset(newbody);
 
-		set_eos(mutable_buffer());
+		set_eos(mutable_bufend());
 	}
 
 	void cow_string_body::shrink_to_fit()
@@ -133,10 +137,11 @@ namespace ext
 		const auto & body = *ext::as_const(m_body);
 		if (body.capacity == body.size) return;
 
-		auto * newbody = alloc_body_adjusted(body, body.size);
-		m_body.reset(newbody);
+		heap_body * newbody;
+		intrusive_ptr_clone(&body, newbody);
+		m_body.reset(newbody, false);
 
-		set_eos(mutable_buffer());
+		set_eos(mutable_bufend());
 	}
 
 

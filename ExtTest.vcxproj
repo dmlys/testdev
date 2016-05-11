@@ -59,6 +59,9 @@
     <ClCompile Include="extlib\tests\codecvt_conv_tests.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)'!='UnitTests'">true</ExcludedFromBuild>
     </ClCompile>
+    <ClCompile Include="extlib\tests\compact_string_test.cpp" >
+      <ExcludedFromBuild Condition="'$(Configuration)'!='UnitTests'">true</ExcludedFromBuild>
+    </ClCompile>
     <ClCompile Include="extlib\tests\ctpred_tests.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)'!='UnitTests'">true</ExcludedFromBuild>
     </ClCompile>
@@ -103,9 +106,13 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="cow_string_body.hpp" />
+    <ClInclude Include="extlib\tests\string_tests.h" />
     <ClInclude Include="extlib\tests\test_files.h">
       <ExcludedFromBuild Condition="'$(Configuration)'!='UnitTests'">true</ExcludedFromBuild>
     </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <Natvis Include="ext.natvis" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

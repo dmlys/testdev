@@ -43,7 +43,9 @@ namespace ext
 		static heap_body * alloc_body(size_type cap);
 		static heap_body * alloc_body_adjusted(const heap_body & oldbody, size_type newcap);
 		static heap_body   init_shared_null();
+
 		value_type * mutable_buffer() const noexcept;
+		value_type * mutable_bufend() const noexcept;
 
 	public:
 		      value_type * data()       noexcept { return m_body->buffer; }
