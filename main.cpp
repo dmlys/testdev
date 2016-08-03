@@ -3,7 +3,7 @@
 #include <fstream>
 #include <string>
 
-#include <ext/intrusive_cow_ptr.hpp>
+#include <ext/intrusive_ptr.hpp>
 #include "cow_string_body.hpp"
 #include <ext/strings/basic_string_facade.hpp>
 #include <ext/strings/basic_string_facade_integration.hpp>

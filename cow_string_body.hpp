@@ -3,7 +3,7 @@
 #include <limits>
 
 #include <boost/config.hpp>
-#include <ext/intrusive_cow_ptr.hpp>
+#include <ext/intrusive_ptr.hpp>
 
 namespace ext
 {
