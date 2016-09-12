@@ -3,31 +3,21 @@
 #include <fstream>
 #include <string>
 
-#include <ext/intrusive_ptr.hpp>
-#include "cow_string_body.hpp"
-#include <ext/strings/basic_string_facade.hpp>
-#include <ext/strings/basic_string_facade_integration.hpp>
-
-#include <ext/strings/compact_string.hpp>
-#include <boost/smart_ptr/intrusive_ptr.hpp>
-
-typedef ext::basic_string_facade<
-	ext::cow_string_body, std::char_traits<char>
-> cow_string;
+#include <ext/threaded_scheduler.hpp>
 
 int main()
 {
-	using namespace std;	
+	using namespace std;
 
-	cow_string ss = "123";
-	auto ss2 = ss;
+	ext::threaded_scheduler sc;
 
-	auto ss3 = ss2;
+	auto f1 = sc.add(100ms, [] { cout << "first\n"; }).share();
+	auto f2 = sc.add(10s, [] { cout << "second\n"; }).share();
 
-	ss3 = ss + ss2;
+	auto fall = ext::when_all(f1, f2);
+	f2.cancel();
 
-	cin >> ss3;
-	cout << ss3 << endl;
+	fall.wait();
 
 	return 0;
 }

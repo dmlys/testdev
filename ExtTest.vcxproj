@@ -59,10 +59,13 @@
     <ClCompile Include="extlib\tests\codecvt_conv_tests.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)'!='UnitTests'">true</ExcludedFromBuild>
     </ClCompile>
-    <ClCompile Include="extlib\tests\compact_string_test.cpp" >
+    <ClCompile Include="extlib\tests\compact_string_test.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)'!='UnitTests'">true</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="extlib\tests\ctpred_tests.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)'!='UnitTests'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="extlib\tests\future_tests.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)'!='UnitTests'">true</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="extlib\tests\itoa_test.cpp">
@@ -72,9 +75,12 @@
       <ExcludedFromBuild Condition="'$(Configuration)'!='UnitTests'">true</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="extlib\tests\lurcache_test.cpp">
-      <ExcludedFromBuild Condition="'$(Configuration)'!='UnitTests'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)'!='UnitTests'">true</ExcludedFromBuild> 
     </ClCompile>
     <ClCompile Include="extlib\tests\socket_streambuf_base_test.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)'!='UnitTests'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="extlib\tests\string_interpolation_test.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)'!='UnitTests'">true</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="extlib\tests\TestMain.cpp">
@@ -92,9 +98,6 @@
     <ClCompile Include="extlib\tests\zip_iterator_test.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)'!='UnitTests'">true</ExcludedFromBuild>
     </ClCompile>
-    <ClCompile Include="extlib\tests\string_interpolation_test.cpp">
-      <ExcludedFromBuild Condition="'$(Configuration)'!='UnitTests'">true</ExcludedFromBuild>
-    </ClCompile>
     <ClCompile Include="main.cpp">
       <ExcludedFromBuild Condition="$(Configuration) == 'UnitTests'">true</ExcludedFromBuild>
     </ClCompile>
@@ -106,10 +109,10 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="cow_string_body.hpp" />
-    <ClInclude Include="extlib\tests\string_tests.h" />
+    <ClInclude Include="extlib\tests\string_tests.h">
+      <ExcludedFromBuild Condition="'$(Configuration)'!='UnitTests'">true</ExcludedFromBuild>    </ClInclude>
     <ClInclude Include="extlib\tests\test_files.h">
-      <ExcludedFromBuild Condition="'$(Configuration)'!='UnitTests'">true</ExcludedFromBuild>
-    </ClInclude>
+      <ExcludedFromBuild Condition="'$(Configuration)'!='UnitTests'">true</ExcludedFromBuild>    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Natvis Include="ext.natvis" />

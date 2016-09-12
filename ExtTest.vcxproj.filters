@@ -2,22 +2,20 @@
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
     <ClCompile Include="main.cpp" />
-    <ClCompile Include="extlib\tests\codecvt_conv_tests.cpp">
-      <Filter>tests</Filter>
-    </ClCompile>
-    <ClCompile Include="extlib\tests\TestMain.cpp">
-      <Filter>tests</Filter>
-    </ClCompile>
-    <ClCompile Include="extlib\tests\lurcache_test.cpp">
-      <Filter>tests</Filter>
-    </ClCompile>
-    <ClCompile Include="extlib\tests\utf8utils_test.cpp">
-      <Filter>tests</Filter>
-    </ClCompile>
+    <ClCompile Include="cow_string_body.cpp" />
     <ClCompile Include="extlib\tests\algorithm_tests.cpp">
       <Filter>tests</Filter>
     </ClCompile>
-    <ClCompile Include="extlib\tests\zip_iterator_test.cpp">
+    <ClCompile Include="extlib\tests\codecvt_conv_tests.cpp">
+      <Filter>tests</Filter>
+    </ClCompile>
+    <ClCompile Include="extlib\tests\compact_string_test.cpp">
+      <Filter>tests</Filter>
+    </ClCompile>
+    <ClCompile Include="extlib\tests\ctpred_tests.cpp">
+      <Filter>tests</Filter>
+    </ClCompile>
+    <ClCompile Include="extlib\tests\future_tests.cpp">
       <Filter>tests</Filter>
     </ClCompile>
     <ClCompile Include="extlib\tests\itoa_test.cpp">
@@ -26,13 +24,7 @@
     <ClCompile Include="extlib\tests\line_reader_test.cpp">
       <Filter>tests</Filter>
     </ClCompile>
-    <ClCompile Include="extlib\tests\transform_width_tests.cpp">
-      <Filter>tests</Filter>
-    </ClCompile>
-    <ClCompile Include="extlib\tests\test_files.cpp">
-      <Filter>tests</Filter>
-    </ClCompile>
-    <ClCompile Include="extlib\tests\ctpred_tests.cpp">
+    <ClCompile Include="extlib\tests\lurcache_test.cpp">
       <Filter>tests</Filter>
     </ClCompile>
     <ClCompile Include="extlib\tests\socket_streambuf_base_test.cpp">
@@ -41,8 +33,19 @@
     <ClCompile Include="extlib\tests\string_interpolation_test.cpp">
       <Filter>tests</Filter>
     </ClCompile>
-    <ClCompile Include="cow_string_body.cpp" />
-    <ClCompile Include="extlib\tests\compact_string_test.cpp">
+    <ClCompile Include="extlib\tests\test_files.cpp">
+      <Filter>tests</Filter>
+    </ClCompile>
+    <ClCompile Include="extlib\tests\TestMain.cpp">
+      <Filter>tests</Filter>
+    </ClCompile>
+    <ClCompile Include="extlib\tests\transform_width_tests.cpp">
+      <Filter>tests</Filter>
+    </ClCompile>
+    <ClCompile Include="extlib\tests\utf8utils_test.cpp">
+      <Filter>tests</Filter>
+    </ClCompile>
+    <ClCompile Include="extlib\tests\zip_iterator_test.cpp">
       <Filter>tests</Filter>
     </ClCompile>
   </ItemGroup>
@@ -55,11 +58,11 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="extlib\tests\test_files.h">
-      <Filter>tests</Filter>
-    </ClInclude>
     <ClInclude Include="cow_string_body.hpp" />
     <ClInclude Include="extlib\tests\string_tests.h">
+      <Filter>tests</Filter>
+    </ClInclude>
+    <ClInclude Include="extlib\tests\test_files.h">
       <Filter>tests</Filter>
     </ClInclude>
   </ItemGroup>
