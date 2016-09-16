@@ -2,7 +2,6 @@
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
     <ClCompile Include="main.cpp" />
-    <ClCompile Include="cow_string_body.cpp" />
     <ClCompile Include="extlib\tests\algorithm_tests.cpp">
       <Filter>tests</Filter>
     </ClCompile>
@@ -48,6 +47,9 @@
     <ClCompile Include="extlib\tests\zip_iterator_test.cpp">
       <Filter>tests</Filter>
     </ClCompile>
+    <ClCompile Include="extlib\tests\cow_string_tests.cpp">
+      <Filter>tests</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="tests">
@@ -58,7 +60,6 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="cow_string_body.hpp" />
     <ClInclude Include="extlib\tests\string_tests.h">
       <Filter>tests</Filter>
     </ClInclude>

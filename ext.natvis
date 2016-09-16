@@ -1,16 +1,4 @@
 <?xml version="1.0" encoding="utf-8"?>
 <AutoVisualizer xmlns="http://schemas.microsoft.com/vstudio/debugger/natvis/2010">
 
-  <Type Name="ext::cow_string_body">
-    <DisplayString>{m_body.m_ptr->buffer, s}</DisplayString>
-    <StringView>m_body.m_ptr->buffer, s</StringView>
-
-    <Expand>
-      <Item Name="refs">m_body.m_ptr->refs</Item>
-      <Item Name="length">m_body.m_ptr->size</Item>
-      <Item Name="capacity">m_body.m_ptr->capacity</Item>          
-      <Item Name="buffer">m_body.m_ptr->buffer, s</Item>
-    </Expand>
-  </Type>
-
 </AutoVisualizer>

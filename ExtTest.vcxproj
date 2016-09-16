@@ -52,7 +52,6 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="cow_string_body.cpp" />
     <ClCompile Include="extlib\tests\algorithm_tests.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)'!='UnitTests'">true</ExcludedFromBuild>
     </ClCompile>
@@ -62,6 +61,7 @@
     <ClCompile Include="extlib\tests\compact_string_test.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)'!='UnitTests'">true</ExcludedFromBuild>
     </ClCompile>
+    <ClCompile Include="extlib\tests\cow_string_tests.cpp" />
     <ClCompile Include="extlib\tests\ctpred_tests.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)'!='UnitTests'">true</ExcludedFromBuild>
     </ClCompile>
@@ -75,7 +75,7 @@
       <ExcludedFromBuild Condition="'$(Configuration)'!='UnitTests'">true</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="extlib\tests\lurcache_test.cpp">
-      <ExcludedFromBuild Condition="'$(Configuration)'!='UnitTests'">true</ExcludedFromBuild> 
+      <ExcludedFromBuild Condition="'$(Configuration)'!='UnitTests'">true</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="extlib\tests\socket_streambuf_base_test.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)'!='UnitTests'">true</ExcludedFromBuild>
@@ -108,11 +108,12 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="cow_string_body.hpp" />
     <ClInclude Include="extlib\tests\string_tests.h">
-      <ExcludedFromBuild Condition="'$(Configuration)'!='UnitTests'">true</ExcludedFromBuild>    </ClInclude>
+      <ExcludedFromBuild Condition="'$(Configuration)'!='UnitTests'">true</ExcludedFromBuild>
+    </ClInclude>
     <ClInclude Include="extlib\tests\test_files.h">
-      <ExcludedFromBuild Condition="'$(Configuration)'!='UnitTests'">true</ExcludedFromBuild>    </ClInclude>
+      <ExcludedFromBuild Condition="'$(Configuration)'!='UnitTests'">true</ExcludedFromBuild>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Natvis Include="ext.natvis" />
