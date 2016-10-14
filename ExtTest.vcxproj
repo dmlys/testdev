@@ -61,7 +61,12 @@
     <ClCompile Include="extlib\tests\compact_string_test.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)'!='UnitTests'">true</ExcludedFromBuild>
     </ClCompile>
-    <ClCompile Include="extlib\tests\cow_string_tests.cpp" />
+    <ClCompile Include="extlib\tests\cow_string_tests.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </ClCompile>
     <ClCompile Include="extlib\tests\ctpred_tests.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)'!='UnitTests'">true</ExcludedFromBuild>
     </ClCompile>

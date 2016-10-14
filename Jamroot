@@ -15,7 +15,8 @@ local src = main.cpp ;
 exe extlibTest
 	# sources
 	: $(src) extlib
-	  /boost//headers	  
+	  /boost//headers /boost//timer
+	  #/user-config//cppformat
 	;
 	
 explicit tests ;
