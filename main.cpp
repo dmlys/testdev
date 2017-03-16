@@ -13,13 +13,13 @@
 #include <ext/thread_pool.hpp>
 #include <ext/threaded_scheduler.hpp>
 
-#include <cppformat/format.h>
+#include <fmt/format.h>
 
 #ifdef _MSC_VER
 #ifdef NDEBUG
-#pragma comment(lib, "cppformat-mt.lib")
+#pragma comment(lib, "libfmt-mt.lib")
 #else
-#pragma comment(lib, "cppformat-mt-gd.lib")
+#pragma comment(lib, "libfmt-mt-gd.lib")
 #endif
 #endif
 
