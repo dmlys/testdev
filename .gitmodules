@@ -4,3 +4,6 @@
 [submodule "msbuild-def"]
 	path = msbuild-def
 	url = ../msbuild-def.git
+[submodule "netlib"]
+	path = netlib
+	url = ../netlib.git

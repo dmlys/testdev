@@ -49,6 +49,8 @@
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
+      <Profile Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</Profile>
+      <Profile Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</Profile>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
@@ -110,6 +112,9 @@
   <ItemGroup>
     <ProjectReference Include="extlib\extlib.vcxproj">
       <Project>{1c5a8c14-535d-44df-9a69-b5d2bd44f774}</Project>
+    </ProjectReference>
+    <ProjectReference Include="netlib\netlib.vcxproj">
+      <Project>{a0cf8db4-824a-4c7b-98d5-77e83548ac1e}</Project>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>

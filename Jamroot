@@ -2,21 +2,25 @@ import boost ;
 boost.use-project ;
 
 # used by child jamfiles
-path-constant SOL_ROOT : . ;
+path-constant SOLUTION_ROOT : . ;
 
-project : default-build <threading>multi $(DEFAULT-BUILD) ;
+project : default-build <threading>multi $(DEFAULT-BUILD) 
+		: build-dir $(DEFAULT-BUILD-DIR) ;
 
-alias extlib-headers : extlib//headers ; #/<extlib-wopenssl>on/<extlib-wzlib>on ;
-alias extlib         : extlib//extlib ; #/<extlib-wopenssl>on/<extlib-wzlib>on ;
-alias tests          : extlib//extlib-tests ; #/<extlib-wopenssl>on/<extlib-wzlib>on ;
+alias extlib-headers : extlib//headers/<extlib-wopenssl>on/<extlib-wzlib>on ;
+alias extlib         : extlib//extlib/<extlib-wopenssl>on/<extlib-wzlib>on ;
+alias tests          : extlib//extlib-tests/<extlib-wopenssl>on/<extlib-wzlib>on ;
+
+alias netlib-headers : netlib//headers ;
+alias netlib         : netlib//netlib  ;
 
 local src = main.cpp ;
 
 exe extlibTest
 	# sources
-	: $(src) extlib
-	  /boost//headers /boost//timer
-	  #/user-config//cppformat
+	: $(src) extlib netlib 
+	  /boost//headers /boost//timer /boost//system
+	  /user-config//openssl
 	;
 	
 explicit tests ;
