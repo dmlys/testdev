@@ -8,7 +8,11 @@
   <ItemDefinitionGroup>
     <ClCompile>
       <AdditionalIncludeDirectories>$(SolutionDir)extlib\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>      
-      <PreprocessorDefinitions>_SCL_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>
+        _SCL_SECURE_NO_WARNINGS;
+        EXT_ENABLE_OPENSSL;
+        %(PreprocessorDefinitions)
+        </PreprocessorDefinitions>
     </ClCompile>
     <Link>
       <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>

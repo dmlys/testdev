@@ -5,7 +5,7 @@ VisualStudioVersion = 14.0.25420.1
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "extlib", "extlib\extlib.vcxproj", "{1C5A8C14-535D-44DF-9A69-B5D2BD44F774}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ExtTest", "ExtTest.vcxproj", "{750B2E3E-9C40-4EE8-B37C-CE816C4AF84E}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "testdev", "testdev.vcxproj", "{750B2E3E-9C40-4EE8-B37C-CE816C4AF84E}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "netlib", "netlib\netlib.vcxproj", "{A0CF8DB4-824A-4C7B-98D5-77E83548AC1E}"
 EndProject

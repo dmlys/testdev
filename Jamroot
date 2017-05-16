@@ -19,7 +19,7 @@ local src = main.cpp ;
 exe extlibTest
 	# sources
 	: $(src) extlib netlib 
-	  /boost//headers /boost//timer /boost//system
+	  /boost//timer /boost//system
 	  /user-config//openssl
 	;
 	

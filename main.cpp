@@ -13,6 +13,9 @@
 #include <ext/thread_pool.hpp>
 #include <ext/threaded_scheduler.hpp>
 
+#include <ext/iostreams/socket_stream.hpp>
+#include <ext/Errors.hpp>
+
 #include <fmt/format.h>
 
 #ifdef _MSC_VER
@@ -20,6 +23,8 @@
 #pragma comment(lib, "libfmt-mt.lib")
 #else
 #pragma comment(lib, "libfmt-mt-gd.lib")
+#pragma comment(lib, "openssl-crypto-mt-gd.lib")
+#pragma comment(lib, "openssl-ssl-mt-gd.lib")
 #endif
 #endif
 
@@ -28,55 +33,33 @@ int main()
 {
 	using namespace std;
 
+
 	ext::init_future_library();
+	ext::socket_stream_init();
 
-	const std::size_t N = 1000 * 10'000;
-	const std::size_t batch_size = 10'000;
-	std::vector<unsigned> arr;
+	ext::socket_stream sock;
 
-	arr.resize(N);
+	std::string host = "httpbin.org";
+	std::string service = "https";
+	sock.connect(host, service);
+	sock.start_ssl(host);
 
-	std::mt19937 eng;
-	std::uniform_int_distribution<unsigned> dist;
-
-	//print(cout, "Generating {} data\n", N);
-
-	auto rng = [dist, eng]() mutable { return dist(eng); };
-	std::generate_n(arr.data(), N, rng);
-
-	//print(cout, "Generated {} data\n", N);
-
-
-	auto n = N / batch_size;
-
-	ext::thread_pool thp {4};
-	std::vector<ext::shared_future<const unsigned *>> farr(n);
-
-	auto start = std::chrono::steady_clock::now();
-
-	for (std::size_t i = 0; i < n; ++i)
+	if (not sock)
 	{
-		const unsigned * first = arr.data() + i * batch_size;
-		const unsigned * last = first + batch_size;
-
-		auto func = [first, last] { 
-			return std::max_element(first, last);
-		};
-		farr[i] = thp.submit(func);
+		cerr << ext::FormatError(sock.last_error()) << endl;
+		return -1;
 	}
 
-	auto all = ext::when_all(farr.begin(), farr.end());
-	all.wait();
+	sock << "GET /get HTTP/1.1\r\n"
+		<< "Host: httpbin.org\r\n"
+		<< "Connection: close\r\n"
+		<< "\r\n";
 
-	auto pred = [](auto & f1, auto & f2) { return *f1.get() < *f2.get(); };
-	auto res = std::max_element(farr.begin(), farr.end(), pred);
+	std::string str;
+	while (std::getline(sock, str))
+		cout << str << "\n";
 
-	auto total = std::chrono::steady_clock::now() - start;
-
-	//print(cout, "max element is: {}\n", *res->get());
-	cout << "max element is: " << *res->get() << endl;
-	cout << "max element is: " << *std::max_element(arr.begin(), arr.end()) << endl;
-	cout << "took " << std::chrono::duration_cast<std::chrono::milliseconds>(total).count() << "ms" << endl;	
+	cout << endl;
 
 	return 0;
 }
