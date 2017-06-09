@@ -3,63 +3,54 @@
 #include <fstream>
 #include <string>
 
+#include <future>
+
+#define BOOST_THREAD_VERSION 4
+#include <boost/thread/future.hpp>
+
 #include <vector>
 #include <random>
 #include <functional>
 #include <algorithm>
 #include <chrono>
 
+#include <ext/future.hpp>
 #include <ext/enum_bitset.hpp>
 #include <ext/thread_pool.hpp>
 #include <ext/threaded_scheduler.hpp>
 
-#include <ext/iostreams/socket_stream.hpp>
-#include <ext/Errors.hpp>
-
 #include <fmt/format.h>
 
-#ifdef _MSC_VER
-#ifdef NDEBUG
-#pragma comment(lib, "libfmt-mt.lib")
-#else
-#pragma comment(lib, "libfmt-mt-gd.lib")
-#pragma comment(lib, "openssl-crypto-mt-gd.lib")
-#pragma comment(lib, "openssl-ssl-mt-gd.lib")
-#endif
-#endif
-
+#include <ext/strings/cow_string.hpp>
 
 int main()
 {
 	using namespace std;
 
+	cout << "Boost version: " << BOOST_VERSION << endl;
+	ext::init_future_library(16);
 
-	ext::init_future_library();
-	ext::socket_stream_init();
+	//_CrtMemState state;
+	//_CrtMemCheckpoint(&state);
+	//
+	//_CrtSetReportMode(_CRT_WARN, _CRTDBG_MODE_FILE);
+	//_CrtSetReportFile(_CRT_WARN, _CRTDBG_FILE_STDERR);
 
-	ext::socket_stream sock;
+	//_CrtMemDumpAllObjectsSince(&state);
 
-	std::string host = "httpbin.org";
-	std::string service = "https";
-	sock.connect(host, service);
-	sock.start_ssl(host);
+	auto f1 = ext::async(ext::launch::deferred, [] { return 12; }).share();
+	ext::future<int> f2;
 
-	if (not sock)
 	{
-		cerr << ext::FormatError(sock.last_error()) << endl;
-		return -1;
+		ext::thread_pool pool {1};
+		f2 = pool.submit(f1, [](auto f) { return f.get() + 12; });
 	}
 
-	sock << "GET /get HTTP/1.1\r\n"
-		<< "Host: httpbin.org\r\n"
-		<< "Connection: close\r\n"
-		<< "\r\n";
-
-	std::string str;
-	while (std::getline(sock, str))
-		cout << str << "\n";
-
-	cout << endl;
-
+	f2.wait();
+	assert(f2.is_abandoned());
+	
+	f1.wait();
+	cout << f1.get() << endl;
+	
 	return 0;
 }
