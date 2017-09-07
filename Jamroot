@@ -20,7 +20,10 @@ exe extlibTest
 	# sources
 	: $(src) extlib netlib 
 	  /boost//timer /boost//system
-	  /user-config//openssl
+	  
+	  /user-config//openssl 
+	  /user-config//z
+	  /user-config//fmt
 	;
 	
 explicit tests ;

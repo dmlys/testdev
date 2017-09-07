@@ -49,8 +49,14 @@
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
-      <Profile Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</Profile>
-      <Profile Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</Profile>
+      <!-- ws2_32.lib; Crypt32.lib   are needed by openssl -->
+      <AdditionalDependencies>ws2_32.lib; Crypt32.lib; %(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies Condition="$(Configuration) == 'Release'">libfmt-mt-s.lib; %(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies Condition="$(Configuration) != 'Release'">libfmt-mt-sgd.lib; %(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies Condition="$(Configuration) == 'Release'">openssl-crypto-mt-s.lib; openssl-ssl-mt-s.lib; %(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies Condition="$(Configuration) != 'Release'">openssl-crypto-mt-sgd.lib; openssl-ssl-mt-sgd.lib; %(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies Condition="$(Configuration) == 'Release'">zlib-mt-s.lib;   %(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies Condition="$(Configuration) != 'Release'">zlib-mt-sgd.lib; %(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>

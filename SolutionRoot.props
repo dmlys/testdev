@@ -10,10 +10,18 @@
       <AdditionalIncludeDirectories>$(SolutionDir)extlib\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AdditionalIncludeDirectories>$(SolutionDir)netlib\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>
+        %(PreprocessorDefinitions);
         _SCL_SECURE_NO_WARNINGS;
-        EXT_ENABLE_OPENSSL;
-        %(PreprocessorDefinitions)
+        EXT_ENABLE_CPPZLIB;
+        EXT_ENABLE_OPENSSL
         </PreprocessorDefinitions>
+        
+      <LanguageStandard>stdcpplatest</LanguageStandard>
+      <PreprocessorDefinitions>
+        %(PreprocessorDefinitions);
+        _HAS_AUTO_PTR_ETC;
+        <!-- _HAS_OLD_IOSTREAMS_MEMBERS; -->
+      </PreprocessorDefinitions>
     </ClCompile>
     <Link>
       <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
