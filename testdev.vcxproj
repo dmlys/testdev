@@ -51,12 +51,12 @@
       <SubSystem>Console</SubSystem>
       <!-- ws2_32.lib; Crypt32.lib   are needed by openssl -->
       <AdditionalDependencies>ws2_32.lib; Crypt32.lib; %(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalDependencies Condition="$(Configuration) == 'Release'">libfmt-mt-s.lib; %(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalDependencies Condition="$(Configuration) != 'Release'">libfmt-mt-sgd.lib; %(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalDependencies Condition="$(Configuration) == 'Release'">openssl-crypto-mt-s.lib; openssl-ssl-mt-s.lib; %(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalDependencies Condition="$(Configuration) != 'Release'">openssl-crypto-mt-sgd.lib; openssl-ssl-mt-sgd.lib; %(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalDependencies Condition="$(Configuration) == 'Release'">zlib-mt-s.lib;   %(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalDependencies Condition="$(Configuration) != 'Release'">zlib-mt-sgd.lib; %(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies Condition="$(Configuration) == 'Release'">libfmt-mt.lib; %(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies Condition="$(Configuration) != 'Release'">libfmt-mt-gd.lib; %(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies Condition="$(Configuration) == 'Release'">openssl-crypto-mt.lib; openssl-ssl-mt.lib; %(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies Condition="$(Configuration) != 'Release'">openssl-crypto-mt-gd.lib; openssl-ssl-mt-gd.lib; %(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies Condition="$(Configuration) == 'Release'">zlib-mt.lib;   %(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies Condition="$(Configuration) != 'Release'">zlib-mt-gd.lib; %(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
@@ -111,6 +111,7 @@
     <ClCompile Include="extlib\tests\zip_iterator_test.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)'!='UnitTests'">true</ExcludedFromBuild>
     </ClCompile>
+    <ClCompile Include="future-fiber.cpp" />
     <ClCompile Include="main.cpp">
       <ExcludedFromBuild Condition="$(Configuration) == 'UnitTests'">true</ExcludedFromBuild>
     </ClCompile>
@@ -130,6 +131,7 @@
     <ClInclude Include="extlib\tests\test_files.h">
       <ExcludedFromBuild Condition="'$(Configuration)'!='UnitTests'">true</ExcludedFromBuild>
     </ClInclude>
+    <ClInclude Include="future-fiber.hpp" />
   </ItemGroup>
   <ItemGroup>
     <Natvis Include="ext.natvis" />

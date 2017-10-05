@@ -50,6 +50,7 @@
     <ClCompile Include="extlib\tests\cow_string_tests.cpp">
       <Filter>tests</Filter>
     </ClCompile>
+    <ClCompile Include="future-fiber.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="tests">
@@ -66,6 +67,7 @@
     <ClInclude Include="extlib\tests\test_files.h">
       <Filter>tests</Filter>
     </ClInclude>
+    <ClInclude Include="future-fiber.hpp" />
   </ItemGroup>
   <ItemGroup>
     <Natvis Include="ext.natvis" />
