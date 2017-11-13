@@ -16,9 +16,14 @@
 #include <ext/thread_pool.hpp>
 #include <ext/threaded_scheduler.hpp>
 #include <ext/strings/cow_string.hpp>
+#include <ext/join_into.hpp>
+#include <ext/type_traits.hpp>
+
 
 #include <boost/system/system_error.hpp>
 #include <boost/system/error_code.hpp>
+#include <boost/algorithm/string.hpp>
+
 
 #include <ext/Errors.hpp>
 #include <ext/FileSystemUtils.hpp>
@@ -29,6 +34,7 @@
 #include <fmt/format.h>
 #include <fmt/ostream.h>
 
+#include <boost/context/detail/apply.hpp>
 #include <boost/fiber/all.hpp>
 #include "future-fiber.hpp"
 
@@ -36,6 +42,8 @@
 int main()
 {
 	using namespace std;
+
+	static_assert(ext::is_iterator_v<std::string::iterator>);
 
 	ext::init_future_library(std::make_unique<ext::fiber_waiter_pool>());
 	ext::init_future_fiber();
@@ -48,13 +56,19 @@ int main()
 	auto f1 = task1.get_future();
 	auto f2 = task2.get_future();
 	auto f3 = ext::async(ext::launch::async, [] { return -50; });
+
 	//auto f3 = ext::make_ready_future(12);
 
 	boost::fibers::fiber ft1 {boost::fibers::launch::dispatch, std::move(task1)};
 	boost::fibers::fiber ft2 {boost::fibers::launch::dispatch, std::move(task2)};
 
 	auto fres = ext::when_all(std::move(f1), std::move(f2), std::move(f3))
-		.then([](auto ff) { auto[fr1, fr2, fr3] = ff.get(); return fr1.get() + fr2.get() + fr3.get(); });
+		.then([](auto ff)
+	{
+		ext::future<int> fr1, fr2, fr3;
+		std::tie(fr1, fr2, fr3) = ff.get();
+		return fr1.get() + fr2.get() + fr3.get();
+	});
 	
 	cout << fres.get() << endl;
 	
