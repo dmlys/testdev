@@ -19,6 +19,12 @@
       <LanguageStandard>stdcpplatest</LanguageStandard>
       <PreprocessorDefinitions>
         %(PreprocessorDefinitions);
+        _SILENCE_CXX17_ITERATOR_BASE_CLASS_DEPRECATION_WARNING;
+        _SILENCE_CXX17_RESULT_OF_DEPRECATION_WARNING;
+        _SILENCE_CXX17_CODECVT_HEADER_DEPRECATION_WARNING;
+        _SILENCE_CXX17_OLD_ALLOCATOR_MEMBERS_DEPRECATION_WARNING;
+        _SILENCE_ALL_CXX17_DEPRECATION_WARNINGS;
+        <!-- _SILENCE_ALL_CXX17_DEPRECATION_WARNINGS  -->
         _HAS_AUTO_PTR_ETC;
         <!-- _HAS_OLD_IOSTREAMS_MEMBERS; -->
       </PreprocessorDefinitions>

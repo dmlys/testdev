@@ -9,10 +9,13 @@ project : default-build <threading>multi $(DEFAULT-BUILD)
 
 alias extlib-headers : extlib//headers/<extlib-wopenssl>on/<extlib-wzlib>on ;
 alias extlib         : extlib//extlib/<extlib-wopenssl>on/<extlib-wzlib>on ;
-alias tests          : extlib//extlib-tests/<extlib-wopenssl>on/<extlib-wzlib>on ;
+alias extlib-tests   : extlib//extlib-tests/<extlib-wopenssl>on/<extlib-wzlib>on ;
 
 alias netlib-headers : netlib//headers ;
 alias netlib         : netlib//netlib  ;
+alias netlib-tests   : netlib//netlib-tests ;
+
+alias tests : extlib-tests netlib-tests ;
 
 local src = main.cpp ;
 

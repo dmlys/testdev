@@ -28,52 +28,97 @@
 #include <ext/Errors.hpp>
 #include <ext/FileSystemUtils.hpp>
 #include <ext/iostreams/socket_stream.hpp>
-#include <ext/netlib/http_response_parser.hpp>
-#include <ext/netlib/http_response_stream.hpp>
+#include <ext/netlib/http_parser.hpp>
+#include <ext/netlib/http_stream.hpp>
 
 #include <fmt/format.h>
 #include <fmt/ostream.h>
 
-#include <boost/context/detail/apply.hpp>
-#include <boost/fiber/all.hpp>
-#include "future-fiber.hpp"
-
+//#include <boost/context/detail/apply.hpp>
+//#include <boost/fiber/all.hpp>
+//#include "future-fiber.hpp"
+//
+//#include <boost/multi_index_container.hpp>
+//#include <boost/multi_index/hashed_index.hpp>
+//#include <boost/multi_index/random_access_index.hpp>
+//#include <boost/multi_index/member.hpp>
+//#include <boost/multi_index/identity.hpp>
+//
+//#include <boost/signals2.hpp>
 
 int main()
 {
 	using namespace std;
 
-	static_assert(ext::is_iterator_v<std::string::iterator>);
+	std::string text;
+	ext::LoadFile(R"(E:\Projects\MarketHub\MarketHubLibs\testdev\netlib\tests\test-files\post.example.txt)", text);
 
-	ext::init_future_library(std::make_unique<ext::fiber_waiter_pool>());
-	ext::init_future_fiber();
+	std::istringstream is(text);
+	auto [method, url, body] = ext::netlib::parse_http_request(is);
 
-	ext::packaged_task<int()> task1, task2;
 
-	task1 = [] { return 12; };
-	task2 = [] { return 100; };
+	return 0;
 
-	auto f1 = task1.get_future();
-	auto f2 = task2.get_future();
-	auto f3 = ext::async(ext::launch::async, [] { return -50; });
+	//ext::init_future_library(std::make_unique<ext::fiber_waiter_pool>());
+	//ext::init_future_fiber();
 
-	//auto f3 = ext::make_ready_future(12);
+	//ext::promise<int> pi1, pi2;
+	//ext::future<void> f1, f2;
 
-	boost::fibers::fiber ft1 {boost::fibers::launch::dispatch, std::move(task1)};
-	boost::fibers::fiber ft2 {boost::fibers::launch::dispatch, std::move(task2)};
+	//{
+	//	ext::thread_pool pool;
+	//	pool.set_nworkers(std::thread::hardware_concurrency());
 
-	auto fres = ext::when_all(std::move(f1), std::move(f2), std::move(f3))
-		.then([](auto ff)
-	{
-		ext::future<int> fr1, fr2, fr3;
-		std::tie(fr1, fr2, fr3) = ff.get();
-		return fr1.get() + fr2.get() + fr3.get();
-	});
-	
-	cout << fres.get() << endl;
-	
-	ft1.join();
-	ft2.join();
+	//	pool.submit([] { cout << "Hello there\n"; });
+
+	//	static int n = 0;
+	//	f1 = pool.submit(pi1.get_future(), [](auto f) { cout << f.get() << endl; });
+	//	f2 = pool.submit(pi2.get_future(), [](auto f) { cout << f.get() << endl; });
+	//	
+	//	pi1.set_value(12);
+	//	pi2.set_value(24);
+
+	//	f1.wait();
+	//	f2.wait();
+
+	//	auto fs1 = pool.stop();
+	//	auto fs2 = pool.stop();
+
+	//	when_all(move(fs1), move(fs2)).wait();
+	//}
+
+	//f1.wait();
+	//f2.wait();
+
+	//ext::init_future_library(std::make_unique<ext::fiber_waiter_pool>());
+	//ext::init_future_fiber();
+
+	//ext::packaged_task<int()> task1, task2;
+
+	//task1 = [] { return 12; };
+	//task2 = [] { return 100; };
+
+	//auto f1 = task1.get_future();
+	//auto f2 = task2.get_future();
+	//auto f3 = ext::async(ext::launch::async, [] { return -50; });
+
+	////auto f3 = ext::make_ready_future(12);
+
+	//boost::fibers::fiber ft1 {boost::fibers::launch::dispatch, std::move(task1)};
+	//boost::fibers::fiber ft2 {boost::fibers::launch::dispatch, std::move(task2)};
+
+	//auto fres = ext::when_all(std::move(f1), std::move(f2), std::move(f3))
+	//	.then([](auto ff)
+	//{
+	//	ext::future<int> fr1, fr2, fr3;
+	//	std::tie(fr1, fr2, fr3) = ff.get();
+	//	return fr1.get() + fr2.get() + fr3.get();
+	//});
+	//
+	//cout << fres.get() << endl;
+	//
+	//ft1.join();
+	//ft2.join();
 
 	return 0;
 }
