@@ -28,5 +28,7 @@ exe extlibTest
 	  /user-config//z
 	  /user-config//fmt
 	;
-	
+
+explicit extlib-tests ;
+explicit netlib-tests ;
 explicit tests ;

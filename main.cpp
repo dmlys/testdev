@@ -31,64 +31,50 @@
 #include <ext/netlib/http_parser.hpp>
 #include <ext/netlib/http_stream.hpp>
 
+//#include <ext/library_logger/logger.hpp>
+//#include <ext/library_logger/logging_macros.hpp>
+
 #include <fmt/format.h>
 #include <fmt/ostream.h>
 
-//#include <boost/context/detail/apply.hpp>
-//#include <boost/fiber/all.hpp>
-//#include "future-fiber.hpp"
-//
-//#include <boost/multi_index_container.hpp>
-//#include <boost/multi_index/hashed_index.hpp>
-//#include <boost/multi_index/random_access_index.hpp>
-//#include <boost/multi_index/member.hpp>
-//#include <boost/multi_index/identity.hpp>
-//
-//#include <boost/signals2.hpp>
+#include <boost/context/detail/apply.hpp>
+#include <boost/fiber/all.hpp>
+#include "future-fiber.hpp"
 
 int main()
 {
 	using namespace std;
 
-	std::string text;
-	ext::LoadFile(R"(E:\Projects\MarketHub\MarketHubLibs\testdev\netlib\tests\test-files\post.example.txt)", text);
+	ext::init_future_library(std::make_unique<ext::fiber_waiter_pool>());
+	ext::init_future_fiber();
 
-	std::istringstream is(text);
-	auto [method, url, body] = ext::netlib::parse_http_request(is);
+	ext::promise<int> pi1, pi2;
+	ext::future<void> f1, f2;
 
+	{
+		ext::thread_pool pool;
+		pool.set_nworkers(std::thread::hardware_concurrency());
 
-	return 0;
+		pool.submit([] { cout << "Hello there\n"; });
 
-	//ext::init_future_library(std::make_unique<ext::fiber_waiter_pool>());
-	//ext::init_future_fiber();
+		static int n = 0;
+		f1 = pool.submit(pi1.get_future(), [](auto f) { cout << f.get() << endl; });
+		f2 = pool.submit(pi2.get_future(), [](auto f) { cout << f.get() << endl; });
+		
+		pi1.set_value(12);
+		pi2.set_value(24);
 
-	//ext::promise<int> pi1, pi2;
-	//ext::future<void> f1, f2;
+		f1.wait();
+		f2.wait();
 
-	//{
-	//	ext::thread_pool pool;
-	//	pool.set_nworkers(std::thread::hardware_concurrency());
+		auto fs1 = pool.stop();
+		auto fs2 = pool.stop();
 
-	//	pool.submit([] { cout << "Hello there\n"; });
+		when_all(move(fs1), move(fs2)).wait();
+	}
 
-	//	static int n = 0;
-	//	f1 = pool.submit(pi1.get_future(), [](auto f) { cout << f.get() << endl; });
-	//	f2 = pool.submit(pi2.get_future(), [](auto f) { cout << f.get() << endl; });
-	//	
-	//	pi1.set_value(12);
-	//	pi2.set_value(24);
-
-	//	f1.wait();
-	//	f2.wait();
-
-	//	auto fs1 = pool.stop();
-	//	auto fs2 = pool.stop();
-
-	//	when_all(move(fs1), move(fs2)).wait();
-	//}
-
-	//f1.wait();
-	//f2.wait();
+	f1.wait();
+	f2.wait();
 
 	//ext::init_future_library(std::make_unique<ext::fiber_waiter_pool>());
 	//ext::init_future_fiber();
