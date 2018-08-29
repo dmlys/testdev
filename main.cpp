@@ -1,4 +1,4 @@
-#include <iostream>
+﻿#include <iostream>
 #include <sstream>
 #include <fstream>
 #include <string>
@@ -37,16 +37,17 @@
 #include <fmt/format.h>
 #include <fmt/ostream.h>
 
-#include <boost/context/detail/apply.hpp>
-#include <boost/fiber/all.hpp>
-#include "future-fiber.hpp"
+//#include <boost/context/detail/apply.hpp>
+//#include <boost/fiber/all.hpp>
+//#include "future-fiber.hpp"
 
 int main()
 {
 	using namespace std;
 
-	ext::init_future_library(std::make_unique<ext::fiber_waiter_pool>());
-	ext::init_future_fiber();
+
+    //ext::init_future_library(std::make_unique<ext::fiber_waiter_pool>());
+    //ext::init_future_fiber();
 
 	ext::promise<int> pi1, pi2;
 	ext::future<void> f1, f2;
@@ -57,7 +58,6 @@ int main()
 
 		pool.submit([] { cout << "Hello there\n"; });
 
-		static int n = 0;
 		f1 = pool.submit(pi1.get_future(), [](auto f) { cout << f.get() << endl; });
 		f2 = pool.submit(pi2.get_future(), [](auto f) { cout << f.get() << endl; });
 		
