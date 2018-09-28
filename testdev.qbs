@@ -1,11 +1,13 @@
 ﻿import qbs
 import qbs.Environment
 
+
 Project
 {
     //property pathList additionalIncludePaths: []
 	//property pathList additionalLibraryPaths: []
-    //property stringList additionalDefines: ["EXT_ENABLE_OPENSSL", "EXT_ENABLE_CPPZLIB"]
+    //property stringList additionalDefines: []
+    property stringList additionalDriverFlags: ["-pthread"]
 	
     property stringList additionalDefines: {
         var defs =[]
@@ -14,7 +16,7 @@ Project
         // https://bugreports.qt.io/browse/QTCREATORBUG-19348
         // clang code model at least with creator 4.7.0 has some strange behaviour with __cplusplus define.
         // it is always defined as 201402L unless in project it explicitly defined via cpp.defines otherwise
-        defs.push("__cplusplus=201703L")
+        //defs.push("__cplusplus=201703L")
 
         if (qbs.toolchain.contains("msvc"))
             defs = defs.uniqueConcat(["_SCL_SECURE_NO_WARNINGS"])
@@ -44,15 +46,17 @@ Project
         filePath: "extlib/extlib.qbs"
         Properties {
             name: "extlib"
-            with_openssl: true
-            with_zlib:    true
+            with_zlib: true
         }
     }
     
     SubProject
     {
         filePath: "netlib/netlib.qbs"
-        Properties { name: "netlib" }
+        Properties {
+            name: "netlib"
+            with_openssl: true
+        }
     }
 
     CppApplication
