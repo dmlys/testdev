@@ -1,3 +1,4 @@
+import path ;
 import boost ;
 boost.use-project ;
 
@@ -5,19 +6,22 @@ boost.use-project ;
 path-constant SOLUTION_ROOT : . ;
 
 project : default-build <threading>multi $(DEFAULT-BUILD) 
-		: build-dir $(DEFAULT-BUILD-DIR) ;
+		: build-dir $(DEFAULT-BUILD-DIR:E=bin) ;
 
-alias extlib-headers : extlib//headers/<extlib-wopenssl>on/<extlib-wzlib>on ;
-alias extlib         : extlib//extlib/<extlib-wopenssl>on/<extlib-wzlib>on ;
-alias extlib-tests   : extlib//extlib-tests/<extlib-wopenssl>on/<extlib-wzlib>on ;
+alias extlib-headers : extlib//headers/<extlib-wzlib>on ;
+alias extlib         : extlib//extlib/<extlib-wzlib>on ;
+alias extlib-tests   : extlib//extlib-tests/<extlib-wzlib>on ;
 
-alias netlib-headers : netlib//headers ;
-alias netlib         : netlib//netlib  ;
-alias netlib-tests   : netlib//netlib-tests ;
+alias netlib-headers : netlib//headers/<extlib-wopenssl>on ;
+alias netlib         : netlib//netlib/<extlib-wopenssl>on  ;
+alias netlib-tests   : netlib//netlib-tests/<extlib-wopenssl>on ;
 
 alias tests : extlib-tests netlib-tests ;
 
-local src = main.cpp ;
+local src = main.cpp future-fiber.cpp ;
+
+lib boost_context ;
+lib boost_fiber ;
 
 exe extlibTest
 	# sources
@@ -26,7 +30,9 @@ exe extlibTest
 	  
 	  /user-config//openssl 
 	  /user-config//z
-	  /user-config//fmt
+	  /user-config//fmt	  
+	  boost_fiber
+	  boost_context
 	;
 
 explicit extlib-tests ;
