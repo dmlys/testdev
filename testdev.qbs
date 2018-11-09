@@ -22,7 +22,7 @@ Project
 		if (envLibPaths)
 		{
 			envLibPaths = envLibPaths.split(qbs.pathListSeparator)
-			libPaths = includes.uniqueConcat(envLibPaths)
+			libPaths = libPaths.uniqueConcat(envLibPaths)
 		}
 
 		return libPaths
@@ -32,7 +32,10 @@ Project
 		var defs = []
 
 		if (qbs.toolchain.contains("msvc"))
+		{
+			defs.push("_WIN32_WINNT=0x0600")
 			defs = defs.uniqueConcat(["_SCL_SECURE_NO_WARNINGS"])
+		}
 
 		return defs
 	}
@@ -77,6 +80,7 @@ Project
 		Depends { name: "netlib" }
 		Depends { name: "extlib" }
 
+		//qbs.debugInformation: true
 		cpp.cxxLanguageVersion : "c++17"
 		cpp.defines: project.additionalDefines
 		cpp.cxxFlags: project.additionalCxxFlags
@@ -87,7 +91,7 @@ Project
 
 		cpp.dynamicLibraries: {
 			if (!qbs.targetOS.contains("windows"))
-				return ["z", "ssl", "crypto", "boost_system", "boost_context", "boost_fiber"]
+				return ["z", "ssl", "fmt", "crypto", "boost_system", "boost_context", "boost_fiber", "boost_timer"]
 
 			if (qbs.buildVariant == "release")
 				return ["libfmt-mt", "openssl-crypto-mt", "openssl-ssl-mt", "zlib-mt"]

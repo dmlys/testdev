@@ -12,9 +12,9 @@ alias extlib-headers : extlib//headers/<extlib-wzlib>on ;
 alias extlib         : extlib//extlib/<extlib-wzlib>on ;
 alias extlib-tests   : extlib//extlib-tests/<extlib-wzlib>on ;
 
-alias netlib-headers : netlib//headers/<extlib-wopenssl>on ;
-alias netlib         : netlib//netlib/<extlib-wopenssl>on  ;
-alias netlib-tests   : netlib//netlib-tests/<extlib-wopenssl>on ;
+alias netlib-headers : netlib//headers/<netlib-wopenssl>on ;
+alias netlib         : netlib//netlib/<netlib-wopenssl>on  ;
+alias netlib-tests   : netlib//netlib-tests/<netlib-wopenssl>on ;
 
 alias tests : extlib-tests netlib-tests ;
 

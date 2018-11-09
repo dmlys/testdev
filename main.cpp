@@ -10,15 +10,20 @@
 #include <algorithm>
 #include <chrono>
 
+#include <unordered_set>
+
 #include <ext/itoa.hpp>
 #include <ext/future.hpp>
 #include <ext/enum_bitset.hpp>
 #include <ext/thread_pool.hpp>
 #include <ext/threaded_scheduler.hpp>
 #include <ext/strings/cow_string.hpp>
+#include <ext/strings/compact_string.hpp>
 #include <ext/join_into.hpp>
 #include <ext/type_traits.hpp>
 
+#include <ext/library_logger/logger.hpp>
+#include <ext/library_logger/logging_macros.hpp>
 
 #include <boost/system/system_error.hpp>
 #include <boost/system/error_code.hpp>
@@ -31,9 +36,6 @@
 #include <ext/netlib/http_parser.hpp>
 #include <ext/netlib/http_stream.hpp>
 
-//#include <ext/library_logger/logger.hpp>
-//#include <ext/library_logger/logging_macros.hpp>
-
 #include <fmt/format.h>
 #include <fmt/ostream.h>
 
@@ -41,69 +43,28 @@
 #include <boost/fiber/all.hpp>
 #include "future-fiber.hpp"
 
+#include <boost/timer/timer.hpp>
+#include <boost/sort/sort.hpp>
+
+#include <boost/core/demangle.hpp>
+#include <boost/mp11.hpp>
+
 int main()
 {
 	using namespace std;
 
-	//ext::init_future_library(std::make_unique<ext::fiber_waiter_pool>());
-	//ext::init_future_fiber();
-	//
-	//ext::promise<int> pi1, pi2;
-	//ext::future<void> f1, f2;
-	//
-	//{
-	//	ext::thread_pool pool;
-	//	pool.set_nworkers(std::thread::hardware_concurrency());
-	//
-	//	pool.submit([] { cout << "Hello there\n"; });
-	//
-	//	f1 = pool.submit(pi1.get_future(), [](auto f) { cout << f.get() << endl; });
-	//	f2 = pool.submit(pi2.get_future(), [](auto f) { cout << f.get() << endl; });
-	//
-	//	pi1.set_value(12);
-	//	pi2.set_value(24);
-	//
-	//	f1.wait();
-	//	f2.wait();
-	//
-	//	auto fs1 = pool.stop();
-	//	auto fs2 = pool.stop();
-	//
-	//	when_all(move(fs1), move(fs2)).wait();
-	//}
-	//
-	//f1.wait();
-	//f2.wait();
+	ext::netlib::socket_streambuf sb;
 
-	ext::init_future_library(std::make_unique<ext::fiber_waiter_pool>());
-	ext::init_future_fiber();
-
-	ext::packaged_task<int()> task1, task2;
-
-	task1 = [] { return 12; };
-	task2 = [] { return 100; };
-
-	auto f1 = task1.get_future();
-	auto f2 = task2.get_future();
-	auto f3 = ext::async(ext::launch::async, [] { return -50; });
-
-	//auto f3 = ext::make_ready_future(12);
-
-	boost::fibers::fiber ft1 {boost::fibers::launch::post, std::ref(task1)};
-	boost::fibers::fiber ft2 {boost::fibers::launch::post, std::ref(task2)};
-
-	auto fres = ext::when_all(std::move(f1), std::move(f2), std::move(f3))
-	    .then([](auto ff)
+	try
 	{
-		ext::future<int> fr1, fr2, fr3;
-		std::tie(fr1, fr2, fr3) = ff.get();
-		return fr1.get() + fr2.get() + fr3.get();
-	});
-
-	cout << fres.get() << endl;
-
-	ft1.join();
-	ft2.join();
-
-	return 0;
+		sb.connect("localhost", 8080);
+		if (sb.is_open()) cout << "success\n";
+		else              cout << "not so success\n";
+	}
+	catch (std::system_error & ex)
+	{
+		cerr << ex.what() << endl;
+		cerr << ext::FormatError(ex) << endl;
+		cerr << ext::FormatError(ex.code()) << endl;
+	}
 }
