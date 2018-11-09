@@ -6,6 +6,11 @@ Project
 {
 	property pathList additionalIncludePaths: {
 		var includes = []
+		return includes
+	}
+
+	property pathList additionalSystemIncludePaths: {
+		var includes = [];
 		var envIncludes = Environment.getEnv("QBS_THIRDPARTY_INCLUDES")
 		if (envIncludes)
 		{
@@ -13,7 +18,7 @@ Project
 			includes = includes.uniqueConcat(envIncludes)
 		}
 
-		return includes
+		return includes;
 	}
 
 	property pathList additionalLibraryPaths: {
@@ -87,6 +92,7 @@ Project
 		cpp.driverFlags: ["-pthread"]
 
 		cpp.includePaths: project.additionalIncludePaths
+		cpp.systemIncludePaths: project.additionalSystemIncludePaths
 		cpp.libraryPaths: project.additionalLibraryPaths
 
 		cpp.dynamicLibraries: {

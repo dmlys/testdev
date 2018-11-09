@@ -49,22 +49,45 @@
 #include <boost/core/demangle.hpp>
 #include <boost/mp11.hpp>
 
+#include <ext/netlib/socket_include.hpp>
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <netinet/tcp.h>
+
+
 int main()
 {
 	using namespace std;
 
 	ext::netlib::socket_streambuf sb;
+	sb.timeout(chrono::system_clock::duration::max());
 
 	try
 	{
+		std::string str;
+		std::getline(cin, str);
+
 		sb.connect("localhost", 8080);
-		if (sb.is_open()) cout << "success\n";
-		else              cout << "not so success\n";
+
+		str.resize(1024);
+		auto shm = sb.showmanyc();
+		auto read = sb.read_some(str.data(), str.size());
+
+		auto sock = sb.handle();
+		unsigned user_timeout = 10 * 1'000;
+		int res = ::setsockopt(sock, IPPROTO_TCP, TCP_USER_TIMEOUT, &user_timeout, sizeof(user_timeout));
+		fmt::print(cout, "setsockopt with TCP_USER_TIMEOUT ended with {} and errno is {}\n", res, ext::FormatErrno(errno));
+
+		cout << flush;
+
+		int ch = sb.sgetc();
+		cout << "readed" << endl;
+		return 0;
 	}
-	catch (std::system_error & ex)
+	catch(std::system_error & ex)
 	{
-		cerr << ex.what() << endl;
 		cerr << ext::FormatError(ex) << endl;
-		cerr << ext::FormatError(ex.code()) << endl;
 	}
+
+
 }
