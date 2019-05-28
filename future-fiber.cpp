@@ -32,7 +32,8 @@ namespace ext
 		std::mutex m_thread_mutex;
 		std::condition_variable m_thread_var;
 
-		std::atomic_bool m_ready = ATOMIC_VAR_INIT(false);
+		std::atomic_bool m_fiber_ready = ATOMIC_VAR_INIT(false);
+		std::atomic_bool m_thread_ready = ATOMIC_VAR_INIT(false);
 
 	public:
 		/// waiting functions: waits until object become ready by execute call
@@ -51,7 +52,16 @@ namespace ext
 
 	void fiber_waiter::continuate(shared_state_basic * caller) noexcept
 	{
-		m_ready.store(true, std::memory_order_relaxed);
+		{
+			std::unique_lock lk(m_thread_mutex);
+			m_thread_ready.store(true, std::memory_order_relaxed);
+		}
+
+		{
+			std::unique_lock lk(m_fiber_mutex);
+			m_fiber_ready.store(true, std::memory_order_relaxed);
+		}
+
 		m_thread_var.notify_all();
 		m_fiber_var.notify_all();
 	}
@@ -60,13 +70,13 @@ namespace ext
 	{
 		if (gth_thread_type == thread_type::thread)
 		{
-			std::unique_lock<std::mutex> lk(m_thread_mutex);
-			return m_thread_var.wait(lk, [this] { return m_ready.load(std::memory_order_relaxed); });
+			std::unique_lock lk(m_thread_mutex);
+			return m_thread_var.wait(lk, [this] { return m_thread_ready.load(std::memory_order_relaxed); });
 		}
 		else
 		{
-			std::unique_lock<boost::fibers::mutex> lk(m_fiber_mutex);
-			return m_fiber_var.wait(lk, [this] { return m_ready.load(std::memory_order_relaxed); });
+			std::unique_lock lk(m_fiber_mutex);
+			return m_fiber_var.wait(lk, [this] { return m_fiber_ready.load(std::memory_order_relaxed); });
 		}
 	}
 
@@ -74,13 +84,13 @@ namespace ext
 	{
 		if (gth_thread_type == thread_type::thread)
 		{
-			std::unique_lock<std::mutex> lk(m_thread_mutex);
-			return m_thread_var.wait_until(lk, timeout_point, [this] { return m_ready.load(std::memory_order_relaxed); });
+			std::unique_lock lk(m_thread_mutex);
+			return m_thread_var.wait_until(lk, timeout_point, [this] { return m_thread_ready.load(std::memory_order_relaxed); });
 		}
 		else
 		{
-			std::unique_lock<boost::fibers::mutex> lk(m_fiber_mutex);
-			return m_fiber_var.wait_until(lk, timeout_point, [this] { return m_ready.load(std::memory_order_relaxed); });
+			std::unique_lock lk(m_fiber_mutex);
+			return m_fiber_var.wait_until(lk, timeout_point, [this] { return m_fiber_ready.load(std::memory_order_relaxed); });
 		}
 	}
 
@@ -88,19 +98,21 @@ namespace ext
 	{
 		if (gth_thread_type == thread_type::thread)
 		{
-			std::unique_lock<std::mutex> lk(m_thread_mutex);
-			return m_thread_var.wait_for(lk, timeout_duration, [this] { return m_ready.load(std::memory_order_relaxed); });
+			std::unique_lock lk(m_thread_mutex);
+			return m_thread_var.wait_for(lk, timeout_duration, [this] { return m_thread_ready.load(std::memory_order_relaxed); });
 		}
 		else
 		{
-			std::unique_lock<boost::fibers::mutex> lk(m_fiber_mutex);
-			return m_fiber_var.wait_for(lk, timeout_duration, [this] { return m_ready.load(std::memory_order_relaxed); });
+			std::unique_lock lk(m_fiber_mutex);
+			return m_fiber_var.wait_for(lk, timeout_duration, [this] { return m_fiber_ready.load(std::memory_order_relaxed); });
 		}
 	}
 
 	void fiber_waiter::reset() noexcept
 	{
-		m_ready.store(false, std::memory_order_relaxed);
+		m_thread_ready.store(false, std::memory_order_relaxed);
+		m_fiber_ready.store(false, std::memory_order_relaxed);
+
 		m_fstnext.store(fsnext_init, std::memory_order_relaxed);
 		m_promise_state.store(static_cast<unsigned>(ext::future_state::unsatisfied), std::memory_order_relaxed);
 	}
