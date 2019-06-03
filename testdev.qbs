@@ -62,6 +62,11 @@ Project
 		return flags
 	}
 
+	property stringList additionalDriverFlags: {
+		var flags = ["-pthread"]
+		return flags
+	}
+
 	SubProject
 	{
 		filePath: "extlib/extlib.qbs"
@@ -80,6 +85,14 @@ Project
 		}
 	}
 
+	SubProject
+	{
+		filePath: "testdev-tests.qbs"
+		Properties {
+			name: "tests"
+		}
+	}
+
 	CppApplication
 	{
 		Depends { name: "netlib" }
@@ -89,7 +102,7 @@ Project
 		cpp.cxxLanguageVersion : "c++17"
 		cpp.defines: project.additionalDefines
 		cpp.cxxFlags: project.additionalCxxFlags
-		cpp.driverFlags: ["-pthread"]
+		cpp.driverFlags: project.additionalDriverFlags
 
 		cpp.includePaths: project.additionalIncludePaths
 		cpp.systemIncludePaths: project.additionalSystemIncludePaths
@@ -97,7 +110,7 @@ Project
 
 		cpp.dynamicLibraries: {
 			if (!qbs.targetOS.contains("windows"))
-				return ["util", "z", "ssl", "fmt", "crypto", "boost_system", "boost_context", "boost_fiber", "boost_timer"]
+				return ["util", "z", "ssl", "stdc++fs", "fmt", "crypto", "boost_system", "boost_context", "boost_fiber", "boost_timer", "boost_thread", "dl"]
 
 			if (qbs.buildVariant == "release")
 				return ["libfmt-mt", "openssl-crypto-mt", "openssl-ssl-mt", "zlib-mt"]
@@ -108,53 +121,6 @@ Project
 		files: [
 			"main.cpp",
 			"future-fiber.*",
-		]
-	}
-
-	CppApplication
-	{
-		name: "extlib-tests"
-		Depends { name: "extlib" }
-
-		cpp.cxxLanguageVersion : "c++17"
-		cpp.cxxFlags: project.additionalCxxFlags
-		cpp.driverFlags: ["-pthread"].concat(project.additionalDriverFlags || [])
-		cpp.defines: ["BOOST_TEST_DYN_LINK"].concat(project.additionalDefines || [])
-		cpp.systemIncludePaths: project.additionalSystemIncludePaths
-		cpp.includePaths: ["include"].concat(project.additionalIncludePaths || [])
-		cpp.libraryPaths: project.additionalLibraryPaths
-
-		cpp.dynamicLibraries: {
-			if (!qbs.targetOS.contains("windows"))
-				return ["z", "boost_system", "boost_filesystem", "boost_unit_test_framework"]
-		}
-
-		files: [
-			"extlib/tests/*.*",
-		]
-	}
-
-	CppApplication
-	{
-		name: "netlib-tests"
-		Depends { name: "extlib" }
-		Depends { name: "netlib" }
-
-		cpp.cxxLanguageVersion : "c++17"
-		cpp.cxxFlags: project.additionalCxxFlags
-		cpp.driverFlags: ["-pthread"].concat(project.additionalDriverFlags || [])
-		cpp.defines: ["BOOST_TEST_DYN_LINK"].concat(project.additionalDefines || [])
-		cpp.systemIncludePaths: project.additionalSystemIncludePaths
-		cpp.includePaths: ["include"].concat(project.additionalIncludePaths || [])
-		cpp.libraryPaths: project.additionalLibraryPaths
-
-		cpp.dynamicLibraries: {
-			if (!qbs.targetOS.contains("windows"))
-				return ["z", "boost_system", "boost_filesystem", "boost_unit_test_framework"]
-		}
-
-		files: [
-			"netlib/tests/*.*",
 		]
 	}
 }
