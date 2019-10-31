@@ -36,10 +36,12 @@ Project
 	property stringList additionalDefines: {
 		var defs = []
 
-		if (qbs.toolchain.contains("msvc"))
+        if (qbs.toolchain.contains("mingw") || qbs.toolchain.contains("msvc"))
 		{
+            defs.push(["_SCL_SECURE_NO_WARNINGS"])
 			defs.push("_WIN32_WINNT=0x0600")
-			defs = defs.uniqueConcat(["_SCL_SECURE_NO_WARNINGS"])
+			defs.push("UNICODE")
+			defs.push("_UNICODE")
 		}
 
 		return defs
@@ -87,6 +89,14 @@ Project
 
 	SubProject
 	{
+		filePath: "xercesc_utils/xercesc_utils.qbs"
+		Properties {
+			name: "xercesc_utils"
+		}
+	}
+
+	SubProject
+	{
 		filePath: "testdev-tests.qbs"
 		Properties {
 			name: "tests"
@@ -109,13 +119,27 @@ Project
 		cpp.libraryPaths: project.additionalLibraryPaths
 
 		cpp.dynamicLibraries: {
-			if (!qbs.targetOS.contains("windows"))
-				return ["util", "z", "ssl", "stdc++fs", "fmt", "crypto", "boost_system", "boost_context", "boost_fiber", "boost_timer", "boost_thread", "dl"]
+			libs = []
+			if (qbs.toolchain.contains("gcc") || qbs.toolchain.contains("clang"))
+			{
+				libs = libs.concat(["boost_context", "boost_fiber", "boost_timer", "boost_filesystem", "boost_system", "boost_thread"])
+				libs = libs.concat(["ssl", "crypto", "z", "fmt", "stdc++fs"])
+			}
 
-			if (qbs.buildVariant == "release")
-				return ["libfmt-mt", "openssl-crypto-mt", "openssl-ssl-mt", "zlib-mt"]
-			else
-				return ["libfmt-mt-gd", "openssl-crypto-mt-gd", "openssl-ssl-mt-gd", "zlib-mt-gd"]
+			if (qbs.toolchain.contains("mingw"))
+			{
+				libs.push("ws2_32")
+			}
+
+			//if (qbs.targetOS.contains("windows"))
+			//{
+			//	if (qbs.buildVariant == "release")
+			//		return ["libfmt-mt", "openssl-crypto-mt", "openssl-ssl-mt", "zlib-mt"]
+			//	else
+			//		return ["libfmt-mt-gd", "openssl-crypto-mt-gd", "openssl-ssl-mt-gd", "zlib-mt-gd"]
+			//}
+
+			return libs
 		}
 
 		files: [

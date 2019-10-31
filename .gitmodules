@@ -7,3 +7,6 @@
 [submodule "netlib"]
 	path = netlib
 	url = ../netlib.git
+[submodule "xercesc_utils"]
+	path = xercesc_utils
+	url = ssh://github/dmlys/xercesc_utils.git

@@ -5,6 +5,6 @@ Project
 {	
 	references: [
 		"extlib/extlib-tests.qbs",
-		//"netlib/netlib-tests.qbs",
+		"netlib/netlib-tests.qbs",
 	]
 }
