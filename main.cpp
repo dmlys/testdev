@@ -31,12 +31,15 @@
 #include <ext/library_logger/logger.hpp>
 #include <ext/library_logger/logging_macros.hpp>
 
+//#include <log4cplus/log4cplus.h>
+//#include <ext/library_logger/log4cplus_logger.hpp>
+
 std::atomic_int counter = 0;
 
 auto test(ext::net::http::http_request & req, ext::thread_pool & pool)
 {
-	return pool.submit([]
-	{
+	//return pool.submit([]
+	//{
 		ext::net::http::http_response resp;
 		resp.http_code = 404;
 		resp.body = "Not Found ";
@@ -46,7 +49,7 @@ auto test(ext::net::http::http_request & req, ext::thread_pool & pool)
 		resp.body += "\n";
 
 		return resp;
-	});
+	//});
 }
 
 ext::net::http::http_server * g_server = nullptr;
@@ -61,10 +64,19 @@ int main()
 	using namespace std;
 	std::signal(SIGPIPE, SIG_IGN);
 	std::signal(SIGINT, sig);
+	std::signal(SIGALRM, sig);
 
-	ext::library_logger::stream_logger logger(std::clog, ext::library_logger::Info);
+	//alarm(5);
 
-	auto pool = std::make_unique<ext::thread_pool>();
+	ext::library_logger::stream_logger logger(std::clog, ext::library_logger::Debug);
+
+	//log4cplus::initialize();
+	//log4cplus::PropertyConfigurator::doConfigure("log4cplus.cfg");
+	//auto main_logger = log4cplus::Logger::getInstance(LOG4CPLUS_TEXT("root"));
+	//main_logger.setLogLevel(log4cplus::TRACE_LOG_LEVEL);
+	//ext::library_logger::log4cplus_logger logger(main_logger);
+
+	auto pool = std::make_shared<ext::thread_pool>();
 	pool->set_nworkers(4);
 
 	ext::net::http::http_server server;
@@ -74,10 +86,10 @@ int main()
 	server.set_socket_timeout(10s);
 	server.add_listener(8080);
 	server.add_handler("/test", std::bind(test, std::placeholders::_1, ref(*pool)));
-	server.set_thread_pool(std::move(pool));
+	server.set_thread_pool(pool);
 	server.join_thread();
 
-	//pool->stop();
+	pool->stop();
 
 	cout << counter << endl;
 

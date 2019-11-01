@@ -1,4 +1,4 @@
-﻿import qbs
+import qbs
 import qbs.Environment
 
 
@@ -61,6 +61,9 @@ Project
 			flags.push("-Wno-implicit-fallthrough")
 		}
 
+		//flags.push("-fdump-ipa-inline")
+		//flags.push("-ggdb3")
+
 		return flags
 	}
 
@@ -107,8 +110,9 @@ Project
 	{
 		Depends { name: "netlib" }
 		Depends { name: "extlib" }
+		Depends { name: "xercesc_utils" }
 
-		//qbs.debugInformation: true
+		qbs.debugInformation: true
 		cpp.cxxLanguageVersion : "c++17"
 		cpp.defines: project.additionalDefines
 		cpp.cxxFlags: project.additionalCxxFlags
@@ -122,6 +126,7 @@ Project
 			libs = []
 			if (qbs.toolchain.contains("gcc") || qbs.toolchain.contains("clang"))
 			{
+				//libs = libs.concat(["log4cplus"])
 				libs = libs.concat(["boost_context", "boost_fiber", "boost_timer", "boost_filesystem", "boost_system", "boost_thread"])
 				libs = libs.concat(["ssl", "crypto", "z", "fmt", "stdc++fs"])
 			}
@@ -145,6 +150,10 @@ Project
 		files: [
 			"main.cpp",
 			"future-fiber.*",
+			"unix-domain-socket.cpp",
+			"socket-rest-subscriber-main.cpp",
 		]
 	}
+	
+	AutotestRunner {}
 }
