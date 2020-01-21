@@ -5,7 +5,7 @@
 #include <fmt/core.h>
 #include <fmt/ostream.h>
 
-#include <ext/Errors.hpp>
+#include <ext/errors.hpp>
 #include <ext/net/http_parser.hpp>
 #include <ext/net/listener.hpp>
 #include <ext/net/socket_rest_supervisor.hpp>
@@ -100,7 +100,7 @@ int list_thread()
 	catch (std::runtime_error & ex)
 	{
 		cerr << ex.what() << std::endl;
-		cerr << ext::FormatError(recv.last_error()) << std::endl;
+		cerr << ext::format_error(recv.last_error()) << std::endl;
 	}
 
 	fmt::print(cerr, "listener thread finished\n");

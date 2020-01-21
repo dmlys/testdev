@@ -2,7 +2,7 @@
 #include <string>
 #include <memory>
 
-#include <ext/Errors.hpp>
+#include <ext/errors.hpp>
 #include <ext/net/socket_include.hpp>
 #include <ext/net/socket_stream.hpp>
 #include <sys/un.h>
@@ -19,7 +19,7 @@ int unix_domain_socket_example()
 	int res = ::connect(sockfd, reinterpret_cast<const sockaddr *>(&addr), sizeof(addr));
 	if (res == -1)
 	{
-		std::cerr << ext::FormatErrno(errno) << std::endl;
+		std::cerr << ext::format_errno(errno) << std::endl;
 		return EXIT_FAILURE;
 	}
 

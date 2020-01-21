@@ -38,7 +38,7 @@ Project
 
         if (qbs.toolchain.contains("mingw") || qbs.toolchain.contains("msvc"))
 		{
-            defs.push(["_SCL_SECURE_NO_WARNINGS"])
+            defs.push("_SCL_SECURE_NO_WARNINGS")
 			defs.push("_WIN32_WINNT=0x0600")
 			defs.push("UNICODE")
 			defs.push("_UNICODE")
@@ -134,6 +134,7 @@ Project
 			if (qbs.toolchain.contains("mingw"))
 			{
 				libs.push("ws2_32")
+				libs.push("crypt32")
 			}
 
 			//if (qbs.targetOS.contains("windows"))
@@ -150,8 +151,8 @@ Project
 		files: [
 			"main.cpp",
 			"future-fiber.*",
-			"unix-domain-socket.cpp",
-			"socket-rest-subscriber-main.cpp",
+			//"unix-domain-socket.cpp",
+			//"socket-rest-subscriber-main.cpp",
 		]
 	}
 	

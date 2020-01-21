@@ -22,7 +22,10 @@
 
 #include <ext/net/socket_stream.hpp>
 #include <ext/net/socket_include.hpp>
+#include <ext/net/http_parser.hpp>
 #include <ext/net/http/http_server.hpp>
+#include <ext/net/http/zlib_filter.hpp>
+#include <ext/net/http/cors_filter.hpp>
 
 //#include <sys/socket.h>
 //#include <netinet/in.h>
@@ -36,22 +39,6 @@
 
 std::atomic_int counter = 0;
 
-auto test(ext::net::http::http_request & req, ext::thread_pool & pool)
-{
-	//return pool.submit([]
-	//{
-		ext::net::http::http_response resp;
-		resp.http_code = 404;
-		resp.body = "Not Found ";
-
-		ext::itoa_buffer<int> buffer;
-		resp.body += ext::itoa(counter.fetch_add(1, std::memory_order_relaxed), buffer);
-		resp.body += "\n";
-
-		return resp;
-	//});
-}
-
 ext::net::http::http_server * g_server = nullptr;
 
 void sig(int)
@@ -62,36 +49,22 @@ void sig(int)
 int main()
 {
 	using namespace std;
-	std::signal(SIGPIPE, SIG_IGN);
-	std::signal(SIGINT, sig);
-	std::signal(SIGALRM, sig);
 
-	//alarm(5);
-
-	ext::library_logger::stream_logger logger(std::clog, ext::library_logger::Debug);
-
-	//log4cplus::initialize();
-	//log4cplus::PropertyConfigurator::doConfigure("log4cplus.cfg");
-	//auto main_logger = log4cplus::Logger::getInstance(LOG4CPLUS_TEXT("root"));
-	//main_logger.setLogLevel(log4cplus::TRACE_LOG_LEVEL);
-	//ext::library_logger::log4cplus_logger logger(main_logger);
-
-	auto pool = std::make_shared<ext::thread_pool>();
-	pool->set_nworkers(4);
-
+	ext::library_logger::stream_logger logger(clog);
 	ext::net::http::http_server server;
 	g_server = &server;
-	server.set_logger(&logger, true);
-	server.set_request_body_logging_level(ext::library_logger::Trace);
-	server.set_socket_timeout(10s);
-	server.add_listener(8080);
-	server.add_handler("/test", std::bind(test, std::placeholders::_1, ref(*pool)));
-	server.set_thread_pool(pool);
+
+	g_server->set_logger(&logger);
+	g_server->add_handler("/test", [](std::string & body) { return "test"; });
+	g_server->add_handler("/zipper", [](std::string & body) { return "zipper"; });
+
+	g_server->add_filter(ext::make_intrusive<ext::net::http::zlib_filter>());
+	g_server->add_filter(ext::make_intrusive<ext::net::http::cors_filter>());
+
+	g_server->add_listener(8080);
+	g_server->add_listener(8081);
+
 	server.join_thread();
-
-	pool->stop();
-
-	cout << counter << endl;
 
 	return 0;
 }
