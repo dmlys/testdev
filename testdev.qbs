@@ -4,74 +4,8 @@ import qbs.Environment
 
 Project
 {
-	property pathList additionalIncludePaths: {
-		var includes = []
-		return includes
-	}
-
-	property pathList additionalSystemIncludePaths: {
-		var includes = [];
-		var envIncludes = Environment.getEnv("QBS_THIRDPARTY_INCLUDES")
-		if (envIncludes)
-		{
-			envIncludes = envIncludes.split(qbs.pathListSeparator)
-			includes = includes.uniqueConcat(envIncludes)
-		}
-
-		return includes;
-	}
-
-	property pathList additionalLibraryPaths: {
-		var libPaths = []
-		var envLibPaths = Environment.getEnv("QBS_THIRDPARTY_LIBPATH")
-		if (envLibPaths)
-		{
-			envLibPaths = envLibPaths.split(qbs.pathListSeparator)
-			libPaths = libPaths.uniqueConcat(envLibPaths)
-		}
-
-		return libPaths
-	}
-
-	property stringList additionalDefines: {
-		var defs = []
-
-        if (qbs.toolchain.contains("mingw") || qbs.toolchain.contains("msvc"))
-		{
-            defs.push("_SCL_SECURE_NO_WARNINGS")
-			defs.push("_WIN32_WINNT=0x0600")
-			defs.push("UNICODE")
-			defs.push("_UNICODE")
-		}
-
-		return defs
-	}
-
-	property stringList additionalCxxFlags: {
-		var flags = []
-		if (qbs.toolchain.contains("msvc"))
-		{
-
-		}
-		else if (qbs.toolchain.contains("gcc") || qbs.toolchain.contains("clang"))
-		{
-			//flags.push("-Wsuggest-override")
-			flags.push("-Wno-unused-parameter")
-			flags.push("-Wno-unused-function")
-			flags.push("-Wno-implicit-fallthrough")
-		}
-
-		//flags.push("-fdump-ipa-inline")
-		//flags.push("-ggdb3")
-
-		return flags
-	}
-
-	property stringList additionalDriverFlags: {
-		var flags = ["-pthread"]
-		return flags
-	}
-
+	qbsSearchPaths: ["qbs-extensions"]
+	
 	SubProject
 	{
 		filePath: "extlib/extlib.qbs"
@@ -111,6 +45,7 @@ Project
 		Depends { name: "netlib" }
 		Depends { name: "extlib" }
 		Depends { name: "xercesc_utils" }
+		Depends { name: "ProjectSettings"; required: false }
 
 		qbs.debugInformation: true
 		cpp.cxxLanguageVersion : "c++17"
@@ -128,6 +63,7 @@ Project
 			{
 				//libs = libs.concat(["log4cplus"])
 				libs = libs.concat(["boost_context", "boost_fiber", "boost_timer", "boost_filesystem", "boost_system", "boost_thread"])
+				libs = libs.concat(["xerces-c"])
 				libs = libs.concat(["ssl", "crypto", "z", "fmt", "stdc++fs"])
 			}
 
@@ -135,6 +71,7 @@ Project
 			{
 				libs.push("ws2_32")
 				libs.push("crypt32")
+				libs.push("ssp") // for mingw(gcc) stack protector, _FORTIFY_SOURCE stuff
 			}
 
 			//if (qbs.targetOS.contains("windows"))
