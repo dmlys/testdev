@@ -4,6 +4,8 @@ import qbs.Environment
 
 Project
 {
+	property bool portable: false
+	
 	qbsSearchPaths: ["qbs-extensions"]
 	
 	SubProject
@@ -50,44 +52,55 @@ Project
 		qbs.debugInformation: true
 		cpp.cxxLanguageVersion : "c++17"
 		cpp.defines: project.additionalDefines
-		cpp.cxxFlags: project.additionalCxxFlags
 		cpp.driverFlags: project.additionalDriverFlags
+		cpp.cxxFlags: project.additionalCxxFlags
 
 		cpp.includePaths: project.additionalIncludePaths
 		cpp.systemIncludePaths: project.additionalSystemIncludePaths
 		cpp.libraryPaths: project.additionalLibraryPaths
 
-		cpp.dynamicLibraries: {
-			libs = []
+		cpp.driverLinkerFlags:
+		{
+			var flags = project.additionalDriverLinkerFlags || [];
+			
 			if (qbs.toolchain.contains("gcc") || qbs.toolchain.contains("clang"))
 			{
-				//libs = libs.concat(["log4cplus"])
-				libs = libs.concat(["boost_context", "boost_fiber", "boost_timer", "boost_filesystem", "boost_system", "boost_thread"])
-				libs = libs.concat(["xerces-c"])
-				libs = libs.concat(["ssl", "crypto", "z", "fmt", "stdc++fs"])
+				if (project.portable)
+					flags.push("-Wl,-Bstatic")
+				
+				flags = flags.concat([
+					//"-lboost_timer", "-lboost_filesystem",
+					"-lboost_system", "-lboost_thread",
+					//"-lboost_context", "-lboost_fiber",
+					"-lxerces-c",
+					"-lssl", "-lcrypto", "-lz", "-lfmt", "-lstdc++fs",
+				]);
+				
+				if (project.portable && qbs.toolchain.contains("mingw"))
+					flags = flags.concat([
+						 "-lstdc++", "-lpthread", // for libpthread static linking mingw somehow needs explicit linking of libstdc++ and libpthread
+						 "-lssp",                 // for mingw(gcc) stack protector, _FORTIFY_SOURCE stuff
+					]);
+				
+				if (project.portable)
+					flags.push("-Wl,-Bdynamic")
+				
+				if (qbs.toolchain.contains("mingw"))
+				{
+					flags.push("-lws2_32")
+					flags.push("-lcrypt32")
+				}
+				
+				if (project.portable)
+					flags = flags.concat(["-static-libstdc++", "-static-libgcc"]);
+				
+				return flags
 			}
-
-			if (qbs.toolchain.contains("mingw"))
-			{
-				libs.push("ws2_32")
-				libs.push("crypt32")
-				libs.push("ssp") // for mingw(gcc) stack protector, _FORTIFY_SOURCE stuff
-			}
-
-			//if (qbs.targetOS.contains("windows"))
-			//{
-			//	if (qbs.buildVariant == "release")
-			//		return ["libfmt-mt", "openssl-crypto-mt", "openssl-ssl-mt", "zlib-mt"]
-			//	else
-			//		return ["libfmt-mt-gd", "openssl-crypto-mt-gd", "openssl-ssl-mt-gd", "zlib-mt-gd"]
-			//}
-
-			return libs
 		}
 
 		files: [
 			"main.cpp",
-			"future-fiber.*",
+			//"future-fiber.*",
 			//"unix-domain-socket.cpp",
 			//"socket-rest-subscriber-main.cpp",
 		]
