@@ -120,18 +120,16 @@ namespace ext
 
 
 
-	bool fiber_waiter_pool::take(waiter_ptr & ptr)
+	void fiber_waiter_pool::take(waiter_ptr & ptr)
 	{
 		ptr = ext::make_intrusive<fiber_waiter>();
 		m_usecount.fetch_add(1, std::memory_order_relaxed);
-		return true;
 	}
 
-	bool fiber_waiter_pool::putback(waiter_ptr & ptr)
+	void fiber_waiter_pool::putback(waiter_ptr & ptr)
 	{
 		ptr = nullptr;
 		m_usecount.fetch_sub(1, std::memory_order_relaxed);
-		return true;
 	}
 
 	bool fiber_waiter_pool::used() const noexcept

@@ -1,12 +1,12 @@
 import qbs
 import qbs.Environment
-
+import "qbs-utils/imports/dmlys/BuildUtils" as BuildUtils
 
 Project
 {
 	property bool portable: false
 	
-	qbsSearchPaths: ["qbs-extensions"]
+	qbsSearchPaths: ["qbs-utils", "qbs-extensions"]
 	
 	SubProject
 	{
@@ -14,6 +14,7 @@ Project
 		Properties {
 			name: "extlib"
 			with_zlib: true
+			with_openssl: true
 		}
 	}
 
@@ -22,7 +23,6 @@ Project
 		filePath: "netlib/netlib.qbs"
 		Properties {
 			name: "netlib"
-			with_openssl: true
 		}
 	}
 
@@ -47,18 +47,32 @@ Project
 		Depends { name: "netlib" }
 		Depends { name: "extlib" }
 		Depends { name: "xercesc_utils" }
+		Depends { name: "dmlys.qbs-common"; required: false }
 		Depends { name: "ProjectSettings"; required: false }
 
 		qbs.debugInformation: true
-		cpp.cxxLanguageVersion : "c++17"
-		cpp.defines: project.additionalDefines
-		cpp.driverFlags: project.additionalDriverFlags
-		cpp.cxxFlags: project.additionalCxxFlags
-
-		cpp.includePaths: project.additionalIncludePaths
-		cpp.systemIncludePaths: project.additionalSystemIncludePaths
-		cpp.libraryPaths: project.additionalLibraryPaths
-
+		cpp.cxxLanguageVersion : "c++20"
+		
+		cpp.dynamicLibraries:
+		{
+			if (qbs.toolchain.contains("msvc"))
+			{
+				var libs = [
+					//"boost_system", "boost_thread", // on msvc boost is autolinked
+					"xercesc",
+					"openssl-crypto", "openssl-ssl",
+					"zlib", "libfmt",
+				];
+				
+				libs = BuildUtils.make_winlibs(qbs, cpp, libs)
+				libs = libs.concat(["ws2_32", "crypt32", "user32", "advapi32"])
+				
+				return libs
+			}
+			
+			return undefined
+		}
+		
 		cpp.driverLinkerFlags:
 		{
 			var flags = project.additionalDriverLinkerFlags || [];

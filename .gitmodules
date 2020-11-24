@@ -9,4 +9,7 @@
 	url = ../netlib.git
 [submodule "xercesc_utils"]
 	path = xercesc_utils
-	url = ssh://github/dmlys/xercesc_utils.git
+	url = ../xercesc_utils.git
+[submodule "qbs-utils"]
+	path = qbs-utils
+	url = ../qbs-utils.git

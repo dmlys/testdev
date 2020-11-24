@@ -1,4 +1,4 @@
-﻿#include <csignal>
+#include <csignal>
 #include <type_traits>
 #include <random>
 #include <functional>
@@ -12,13 +12,21 @@
 #include <iostream>
 #include <sstream>
 #include <fstream>
+#include <filesystem>
 
 #include <fmt/format.h>
 #include <fmt/ostream.h>
 
 #include <ext/itoa.hpp>
+#include <ext/errors.hpp>
 #include <ext/future.hpp>
 #include <ext/thread_pool.hpp>
+#include <ext/cppzlib.hpp>
+
+#include <boost/range.hpp>
+#include <boost/range/as_literal.hpp>
+#include <ext/range.hpp>
+#include <ext/filesystem_utils.hpp>
 
 #include <ext/net/socket_stream.hpp>
 #include <ext/net/socket_include.hpp>
@@ -31,14 +39,8 @@
 //#include <netinet/in.h>
 //#include <netinet/tcp.h>
 
-#include <ext/library_logger/logger.hpp>
-#include <ext/library_logger/logging_macros.hpp>
-
-//#include <log4cplus/log4cplus.h>
-//#include <ext/library_logger/log4cplus_logger.hpp>
 
 std::atomic_int counter = 0;
-
 ext::net::http::http_server * g_server = nullptr;
 
 void sig(int)
@@ -48,23 +50,28 @@ void sig(int)
 
 int main()
 {
-	using namespace std;
-
-	ext::library_logger::stream_logger logger(clog);
+	using namespace std;	
+	using namespace chrono;
+	
+	std::signal(SIGINT, sig);
+	
+	ext::init_future_library();
+	ext::net::socket_stream_init();
+	
+	ext::library_logger::stream_logger logger(clog, ext::library_logger::Trace);
 	ext::net::http::http_server server;
 	g_server = &server;
 
-	g_server->set_logger(&logger);
-	g_server->add_handler("/test", [](std::string & body) { return "test"; });
-	g_server->add_handler("/zipper", [](std::string & body) { return "zipper"; });
+	server.set_logger(&logger);
+	server.set_request_logging_level(ext::library_logger::Trace);
 
-	g_server->add_filter(ext::make_intrusive<ext::net::http::zlib_filter>());
-	g_server->add_filter(ext::make_intrusive<ext::net::http::cors_filter>());
+	server.add_handler("/test", [] { return "test"; });
+	server.add_handler("/stream", [] (std::unique_ptr<std::streambuf> & sb) { return std::move(sb); });
+	
+	server.add_listener(ext::net::listener(8080, AF_INET6));
+	server.add_listener(ext::net::listener(8081, AF_INET6));
 
-	g_server->add_listener(8080);
-	g_server->add_listener(8081);
-
-	server.join_thread();
-
+	server.join();
+	
 	return 0;
 }

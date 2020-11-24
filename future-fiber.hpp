@@ -13,8 +13,8 @@ namespace ext
 		std::atomic_uint m_usecount = ATOMIC_VAR_INIT(0);
 
 	public:
-		bool take(waiter_ptr & ptr) override;
-		bool putback(waiter_ptr & ptr) override;
+		void take(waiter_ptr & ptr) override;
+		void putback(waiter_ptr & ptr) override;
 		bool used() const noexcept override;
 	};
 }
