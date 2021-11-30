@@ -34,13 +34,24 @@
 #include <ext/net/http/http_server.hpp>
 #include <ext/net/http/zlib_filter.hpp>
 #include <ext/net/http/cors_filter.hpp>
+//#include <ext/net/http/filesystem_handler.hpp>
 
 //#include <sys/socket.h>
 //#include <netinet/in.h>
 //#include <netinet/tcp.h>
 
+#include <ext/object_pool.hpp>
 
-std::atomic_int counter = 0;
+#include <ext/base64.hpp>
+#include <ext/net/mime/url_encoding.hpp>
+
+
+#include <ext/stream_filtering.hpp>
+#include <ext/stream_filtering/zlib.hpp>
+#include <ext/stream_filtering/basexx.hpp>
+
+
+//std::atomic_int counter = 0;
 ext::net::http::http_server * g_server = nullptr;
 
 void sig(int)
@@ -50,7 +61,7 @@ void sig(int)
 
 int main()
 {
-	using namespace std;	
+	using namespace std;
 	using namespace chrono;
 	
 	std::signal(SIGINT, sig);
@@ -58,7 +69,7 @@ int main()
 	ext::init_future_library();
 	ext::net::socket_stream_init();
 	
-	ext::library_logger::stream_logger logger(clog, ext::library_logger::Trace);
+	ext::library_logger::stream_logger logger(clog, ext::library_logger::Info);
 	ext::net::http::http_server server;
 	g_server = &server;
 
@@ -68,6 +79,8 @@ int main()
 	server.add_handler("/test", [] { return "test"; });
 	server.add_handler("/stream", [] (std::unique_ptr<std::streambuf> & sb) { return std::move(sb); });
 	
+	//server.add_handler(std::make_unique<ext::net::http::filesystem_handler>("/file", "/home/dima/projects/dmlys/"));
+	
 	server.add_listener(ext::net::listener(8080, AF_INET6));
 	server.add_listener(ext::net::listener(8081, AF_INET6));
 
@@ -75,3 +88,56 @@ int main()
 	
 	return 0;
 }
+
+
+
+//#define __cpp_impl_coroutine 1
+//#include <concepts>
+//#include <coroutine>
+//#include <exception>
+//#include <iostream>
+//
+//struct ReturnObject {
+//  struct promise_type {
+//    ReturnObject get_return_object() { return {}; }
+//    std::suspend_never initial_suspend() { return {}; }
+//    std::suspend_never final_suspend() noexcept { return {}; }
+//    void unhandled_exception() {}
+//  };
+//};
+//
+//struct Awaiter {
+//  std::coroutine_handle<> *hp_;
+//  constexpr bool await_ready() const noexcept { return false; }
+//  void await_suspend(std::coroutine_handle<> h) { *hp_ = h; }
+//  constexpr void await_resume() const noexcept {}
+//};
+//
+//ReturnObject
+//counter(std::coroutine_handle<> *continuation_out)
+//{
+//  Awaiter a{continuation_out};
+//  for (unsigned i = 0;; ++i) {
+//    co_await a;
+//    std::cout << "counter: " << i << std::endl;
+//  }
+//}
+//
+//void
+//main1()
+//{
+//  std::coroutine_handle<> h;
+//  counter(&h);
+//  for (int i = 0; i < 3; ++i) {
+//    std::cout << "In main1 function\n";
+//    h();
+//  }
+//  h.destroy();
+//}
+//
+//int main()
+//{
+//	main1();
+//}
+//
+//

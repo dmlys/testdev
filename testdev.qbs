@@ -36,6 +36,14 @@ Project
 
 	SubProject
 	{
+		filePath: "wincrypt-utils/wincrypt-utils.qbs"
+		Properties {
+			name: "wincrypt-utils"
+		}
+	}
+	
+	SubProject
+	{
 		filePath: "testdev-tests.qbs"
 		Properties {
 			name: "tests"
@@ -46,12 +54,13 @@ Project
 	{
 		Depends { name: "netlib" }
 		Depends { name: "extlib" }
+		Depends { name: "wincrypt-utils"; condition: qbs.targetOS.contains("windows") }
 		Depends { name: "xercesc_utils" }
 		Depends { name: "dmlys.qbs-common"; required: false }
 		Depends { name: "ProjectSettings"; required: false }
 
 		qbs.debugInformation: true
-		cpp.cxxLanguageVersion : "c++20"
+		cpp.cxxLanguageVersion : "c++23"
 		
 		cpp.dynamicLibraries:
 		{
@@ -79,6 +88,7 @@ Project
 			
 			if (qbs.toolchain.contains("gcc") || qbs.toolchain.contains("clang"))
 			{
+				//flags.push("-fcoroutines")
 				if (project.portable)
 					flags.push("-Wl,-Bstatic")
 				
@@ -103,6 +113,7 @@ Project
 				{
 					flags.push("-lws2_32")
 					flags.push("-lcrypt32")
+					flags.push("-lcryptui")
 				}
 				
 				if (project.portable)

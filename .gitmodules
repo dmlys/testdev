@@ -13,3 +13,6 @@
 [submodule "qbs-utils"]
 	path = qbs-utils
 	url = ../qbs-utils.git
+[submodule "wincrypt-utils"]
+	path = wincrypt-utils
+	url = ../wincrypt-utils.git
