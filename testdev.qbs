@@ -28,9 +28,9 @@ Project
 
 	SubProject
 	{
-		filePath: "xercesc_utils/xercesc_utils.qbs"
+		filePath: "xercesc-utils/xercesc-utils.qbs"
 		Properties {
-			name: "xercesc_utils"
+			name: "xercesc-utils"
 		}
 	}
 
@@ -55,7 +55,7 @@ Project
 		Depends { name: "netlib" }
 		Depends { name: "extlib" }
 		Depends { name: "wincrypt-utils"; condition: qbs.targetOS.contains("windows") }
-		Depends { name: "xercesc_utils" }
+		Depends { name: "xercesc-utils" }
 		Depends { name: "dmlys.qbs-common"; required: false }
 		Depends { name: "ProjectSettings"; required: false }
 

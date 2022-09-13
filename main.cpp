@@ -30,7 +30,7 @@
 
 #include <ext/net/socket_stream.hpp>
 #include <ext/net/socket_include.hpp>
-#include <ext/net/http_parser.hpp>
+#include <ext/net/http/http_parser.hpp>
 #include <ext/net/http/http_server.hpp>
 #include <ext/net/http/zlib_filter.hpp>
 #include <ext/net/http/cors_filter.hpp>
@@ -69,12 +69,12 @@ int main()
 	ext::init_future_library();
 	ext::net::socket_stream_init();
 	
-	ext::library_logger::stream_logger logger(clog, ext::library_logger::Info);
+	ext::log::ostream_logger logger(clog, ext::log::Info);
 	ext::net::http::http_server server;
 	g_server = &server;
 
 	server.set_logger(&logger);
-	server.set_request_logging_level(ext::library_logger::Trace);
+	server.set_request_logging_level(ext::log::Trace);
 
 	server.add_handler("/test", [] { return "test"; });
 	server.add_handler("/stream", [] (std::unique_ptr<std::streambuf> & sb) { return std::move(sb); });

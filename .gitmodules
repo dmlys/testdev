@@ -7,12 +7,12 @@
 [submodule "netlib"]
 	path = netlib
 	url = ../netlib.git
-[submodule "xercesc_utils"]
-	path = xercesc_utils
-	url = ../xercesc_utils.git
 [submodule "qbs-utils"]
 	path = qbs-utils
 	url = ../qbs-utils.git
 [submodule "wincrypt-utils"]
 	path = wincrypt-utils
 	url = ../wincrypt-utils.git
+[submodule "xercesc-utils"]
+	path = xercesc-utils
+	url = ../xercesc-utils.git
