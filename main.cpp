@@ -40,7 +40,6 @@
 //#include <netinet/in.h>
 //#include <netinet/tcp.h>
 
-#include <ext/object_pool.hpp>
 
 #include <ext/base64.hpp>
 #include <ext/net/mime/url_encoding.hpp>
@@ -67,7 +66,7 @@ int main()
 	std::signal(SIGINT, sig);
 	
 	ext::init_future_library();
-	ext::net::socket_stream_init();
+	ext::net::init_socket_library();
 	
 	ext::log::ostream_logger logger(clog, ext::log::Info);
 	ext::net::http::http_server server;

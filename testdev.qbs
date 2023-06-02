@@ -61,7 +61,7 @@ Project
 
 		qbs.debugInformation: true
 		cpp.cxxLanguageVersion : "c++23"
-		
+		               
 		cpp.dynamicLibraries:
 		{
 			if (qbs.toolchain.contains("msvc"))
@@ -74,7 +74,7 @@ Project
 				];
 				
 				libs = BuildUtils.make_winlibs(qbs, cpp, libs)
-				libs = libs.concat(["ws2_32", "crypt32", "user32", "advapi32"])
+				libs = libs.concat(["ws2_32", "crypt32", "user32", "advapi32", "Iphlpapi"])
 				
 				return libs
 			}
@@ -125,6 +125,7 @@ Project
 
 		files: [
 			"main.cpp",
+			"netstat/*",
 			//"future-fiber.*",
 			//"unix-domain-socket.cpp",
 			//"socket-rest-subscriber-main.cpp",
