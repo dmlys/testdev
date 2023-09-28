@@ -114,6 +114,7 @@ Project
 					flags.push("-lws2_32")
 					flags.push("-lcrypt32")
 					flags.push("-lcryptui")
+					flags.push("-liphlpapi")
 				}
 				
 				if (project.portable)
