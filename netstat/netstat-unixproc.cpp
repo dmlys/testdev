@@ -36,8 +36,7 @@ static auto read_line(const char * fname, std::istream & is, char * buffer, std:
 	}
 	else
 	{
-		auto errmsg = fmt::format("find_socket_inode: failed to read line from {}", fname);
-		ext::throw_last_errno(errmsg);
+		ext::throw_last_errno("find_socket_inode: failed to read line from {}", fname);
 	}
 }
 
@@ -56,12 +55,6 @@ static void parse_addr(in6_addr * addr, const char buffer[32])
 	
 	sscanf(buffer, "%8X%8X%8X%8X", u0, u1, u2, u3);
 }
-
-auto find_counter_socket_inode_procfs(socket_handle_type sock, ext::log::logger * logger) -> std::tuple<uid_t, ino64_t>
-{
-	return find_counter_socket(find_socket_inode_procfs, "find_counter_socket_inode_procfs", sock, logger);
-}
-
 
 auto find_socket_inode_procfs(int proto, const sockaddr * sock_addr, const sockaddr * peer_addr, ext::log::logger * logger) -> std::tuple<uid_t, ino64_t>
 {
@@ -85,7 +78,7 @@ auto find_socket_inode_procfs(int proto, const sockaddr * sock_addr, const socka
 	std::string buffer;
 	buffer.resize(buffer_size);
 	
-	std::tuple<uid_t, ino64_t> result = {-1, -1};
+	std::tuple<uid_t, ino64_t> result = {0, 0};
 	
 	if (sock_addr->sa_family == AF_INET)
 	{
@@ -98,7 +91,7 @@ auto find_socket_inode_procfs(int proto, const sockaddr * sock_addr, const socka
 		auto fname = proto == IPPROTO_TCP ? "/proc/net/tcp" : "/proc/net/udp";
 		std::ifstream ifs(fname);
 		if (not ifs)
-			ext::throw_last_errno(fmt::format("find_socket_inode_procfs: failed to open {}", fname));
+			ext::throw_last_errno("find_socket_inode_procfs: failed to open {}", fname);
 		
 		// first line are headers - ignore for now
 		read_line(fname, ifs, buffer.data(), buffer_size);
@@ -120,8 +113,8 @@ auto find_socket_inode_procfs(int proto, const sockaddr * sock_addr, const socka
 				throw std::runtime_error("find_socket_inode_procfs: failed to parse line");
 			}
 			
-			bool matched = sock_addr_in->sin_addr.s_addr == remote_inaddr.s_addr and sock_port == remote_port
-			           and peer_addr_in->sin_addr.s_addr == local_inaddr.s_addr  and peer_port == local_port;
+			bool matched = sock_addr_in->sin_addr.s_addr == local_inaddr.s_addr  and sock_port == local_port
+			           and peer_addr_in->sin_addr.s_addr == remote_inaddr.s_addr and peer_port == remote_port;
 			
 			if (matched)
 			{
@@ -141,7 +134,7 @@ auto find_socket_inode_procfs(int proto, const sockaddr * sock_addr, const socka
 		auto fname = proto == IPPROTO_TCP ? "/proc/net/tcp6" : "/proc/net/udp6";
 		std::ifstream ifs(fname);
 		if (not ifs)
-			ext::throw_last_errno(fmt::format("find_socket_inode_procfs: failed to open {}", fname));
+			ext::throw_last_errno("find_socket_inode_procfs: failed to open {}", fname);
 		
 		// first line are headers - ignore for now
 		read_line(fname, ifs, buffer.data(), buffer_size);
@@ -173,8 +166,8 @@ auto find_socket_inode_procfs(int proto, const sockaddr * sock_addr, const socka
 			parse_addr(&local_inaddr, local_addr_buffer);
 			parse_addr(&remote_inaddr, local_addr_buffer);
 			
-			bool matched = std::memcmp(sock_addr_in->sin6_addr.s6_addr, remote_inaddr.s6_addr, ipv6_size) == 0 and sock_port == remote_port
-			           and std::memcmp(peer_addr_in->sin6_addr.s6_addr, local_inaddr.s6_addr, ipv6_size) == 0 and peer_port == local_port;
+			bool matched = std::memcmp(sock_addr_in->sin6_addr.s6_addr, local_inaddr.s6_addr,  ipv6_size) == 0 and sock_port == local_port
+			           and std::memcmp(peer_addr_in->sin6_addr.s6_addr, remote_inaddr.s6_addr, ipv6_size) == 0 and peer_port == remote_port;
 			
 			if (matched)
 			{				
@@ -196,13 +189,13 @@ static dirent * readdir_helper(DIR * dir, const char * path)
 	
 	if (errno == 0) return nullptr; // eof
 	
-	ext::throw_last_errno(fmt::format("find_pid_by_inode: readdir for \"{}\" failed", path));
+	ext::throw_last_errno("find_pid_by_inode: readdir for \"{}\" failed", path);
 }
 
 pid_t find_pid_by_inode(ino64_t inode, ext::log::logger * logger)
 {
 	if (inode <= 0)
-		return -1;
+		return 0;
 	
 	EXTLOG_DEBUG_FMT(logger, "find_pid_by_inode: searching pid for inode = {}", inode);
 	
@@ -248,7 +241,7 @@ pid_t find_pid_by_inode(ino64_t inode, ext::log::logger * logger)
 		fddir = opendir(linkpath.c_str());
 		if (not fddir)
 		{
-			EXTLOG_DEBUG_FMT(logger, "find_pid_by_inode: failed to open {}, skipping", linkpath);
+			EXTLOG_TRACE_FMT(logger, "find_pid_by_inode: failed to open {}, skipping", linkpath);
 			continue;
 		}
 		
@@ -283,7 +276,7 @@ pid_t find_pid_by_inode(ino64_t inode, ext::log::logger * logger)
 				std::string_view resolved_link(buffer, read);
 				if (resolved_link == needle)
 				{
-					EXTLOG_DEBUG_FMT(logger, "find_pid_by_inode: {} points to {}, returning", linkpath, resolved_link);
+					EXTLOG_DEBUG_FMT(logger, "find_pid_by_inode: {} points to {}, returning pid = {}", linkpath, resolved_link, pid_first);
 					return std::strtod(pid_first, nullptr);
 				}
 			}
@@ -293,7 +286,17 @@ pid_t find_pid_by_inode(ino64_t inode, ext::log::logger * logger)
 	}
 	
 	EXTLOG_DEBUG_FMT(logger, "find_pid_by_inode: failed to find pid for inode = {}", inode);
-	return -1;
+	return 0;
+}
+
+auto find_socket_inode_procfs(socket_handle_type sock, ext::log::logger * logger) -> std::tuple<uid_t, ino64_t>
+{
+	return find_socket_pid_helper(find_socket_inode_procfs, "find_socket_inode_procfs", sock, logger);
+}
+
+auto find_socket_counter_inode_procfs(int sock, ext::log::logger * logger) -> std::tuple<uid_t, ino64_t>
+{
+	return find_socket_counter_pid_helper(find_socket_inode_procfs, "find_socket_counter_inode_procfs", sock, logger);
 }
 
 #endif // BOOST_OS_UNIX

@@ -86,12 +86,7 @@ static std::unique_ptr<MIB_TCP6TABLE2> obtain_tcp6table()
 	return tcpTable;
 }
 
-unsigned int find_counter_socket_pid(int sock, ext::log::logger * logger)
-{
-	return find_counter_socket(find_socket_pid, "find_counter_socket_pid", sock, logger);
-}
-
-unsigned int find_socket_pid(int proto, const sockaddr * sock_addr, const sockaddr * peer_addr, ext::log::logger * logger)
+unsigned long find_socket_pid(int proto, const sockaddr * sock_addr, const sockaddr * peer_addr, ext::log::logger * logger)
 {
 	assert(sock_addr);
 	assert(peer_addr);
@@ -174,6 +169,16 @@ unsigned int find_socket_pid(int proto, const sockaddr * sock_addr, const sockad
 	
 	EXTLOG_DEBUG_FMT(logger, "find_socket_pid: searching pid result: pid = {}", pid);
 	return pid;
+}
+
+unsigned long find_socket_pid(int sock, ext::log::logger * logger)
+{
+	return find_socket_pid_helper(find_socket_pid, "find_socket_pid", sock, logger);
+}
+
+unsigned long find_socket_counter_pid(int sock, ext::log::logger * logger)
+{
+	return find_socket_counter_pid_helper(find_socket_pid, "find_socket_counter_pid", sock, logger);
 }
 
 #endif // BOOST_OS_WINDOWS

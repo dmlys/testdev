@@ -21,6 +21,7 @@
 #include <fmt/format.h>
 
 #include <ext/errors.hpp>
+#include <ext/range/input_range_facade.hpp>
 #include <ext/log/logging_macros.hpp>
 #include <ext/net/socket_base.hpp>
 
@@ -88,23 +89,44 @@ error:
 static void wait_readable(socket_handle_type sock, int millis) { return wait_state(sock, millis, 0x1); }
 static void wait_writable(socket_handle_type sock, int millis) { return wait_state(sock, millis, 0x2); }
 
+template <class ... Type>
+static int send_netlink_message(socket_handle_type netlink_sock, Type * ... payload)
+{
+	constexpr unsigned n = sizeof ...(payload);
+	struct iovec iov[n] = {   { payload, sizeof(*payload) }...   };
+	
+	return send_netlink_message(netlink_sock, n, iov);
+}
+
+static int send_netlink_message(socket_handle_type netlink_sock, unsigned niov, struct iovec * iov)
+{
+	struct sockaddr_nl netlink_addr;
+	struct msghdr netlink_msg;
+	
+	std::memset(&netlink_addr, 0, sizeof netlink_addr);
+	std::memset(&netlink_msg, 0, sizeof netlink_msg);
+	
+	netlink_addr = { .nl_family = AF_NETLINK, .nl_pid = 0 };
+	netlink_msg = {
+	    .msg_name = &netlink_addr, .msg_namelen = sizeof(netlink_addr),
+	    .msg_iov = iov, .msg_iovlen = niov
+	};
+	
+	return ::sendmsg(netlink_sock, &netlink_msg, 0);
+}
+
 static void send_netlink_inet_diag_req(socket_handle_type netlink_sock, int sock_proto, const sockaddr * src, const sockaddr * dst, ext::log::logger * logger)
 {
 	// See man 7 netlink and man sock_diag. (also man sendmsg).
-	// We need to create 2 messages: header/nlmsghdr and payload/inet_diag_req_v2,
+	// We need to create 2 messages: header - nlmsghdr and payload - inet_diag_req_v2,
 	// and send them one after another as whole UDP diagram
-	
-	// sendmsg stuff
-	struct sockaddr_nl netlink_addr;
-	struct msghdr netlink_msg;
-	struct iovec iov[4];
 	
 	// our messages
 	struct nlmsghdr netlink_msghdr;         // header
 	struct inet_diag_req_v2 inet_conn_req;  // payload
 
-	std::memset(&netlink_addr, 0, sizeof netlink_addr);
-	std::memset(&netlink_msg, 0, sizeof netlink_msg);
+	//std::memset(&netlink_addr, 0, sizeof netlink_addr);
+	//std::memset(&netlink_msg, 0, sizeof netlink_msg);
 	std::memset(&netlink_msghdr, 0, sizeof netlink_msghdr);
 	std::memset(&inet_conn_req, 0, sizeof inet_conn_req);
 	
@@ -176,21 +198,9 @@ static void send_netlink_inet_diag_req(socket_handle_type netlink_sock, int sock
 		std::memcpy(id.idiag_src, src_in->sin6_addr.s6_addr, sizeof src_in->sin6_addr.s6_addr);
 	}
 	
-	// fill sendmsg structures
-	iov[0].iov_base = &netlink_msghdr;
-	iov[0].iov_len = sizeof netlink_msghdr;
-	iov[1].iov_base = &inet_conn_req;
-	iov[1].iov_len = sizeof inet_conn_req;
-	
-	netlink_addr = { .nl_family = AF_NETLINK, .nl_pid = 0 };
-	netlink_msg = {
-	    .msg_name = &netlink_addr, .msg_namelen = sizeof(netlink_addr),
-	    .msg_iov = iov, .msg_iovlen = 2
-	};
-	
 	// send at last
 	EXTLOG_TRACE_STR(logger, "send_netlink_inet_diag_req: sending request");
-	auto retval = sendmsg(netlink_sock, &netlink_msg, 0);
+	auto retval = send_netlink_message(netlink_sock, &netlink_msghdr, &inet_conn_req);
 	EXTLOG_TRACE_FMT(logger, "send_netlink_inet_diag_req: request sent, retval = {}, errno = {}", retval, ext::format_errno(errno));
 	
 	if (retval < 0) ext::throw_last_errno("send_netlink_inet_diag_req: sendmsg failed");
@@ -251,20 +261,20 @@ static void recv_netlink_inet_diag_msg(socket_handle_type netlink_sock, std::fun
 		while(NLMSG_OK(netlink_msghdr, msglen))
 		{
 			multipart = netlink_msghdr->nlmsg_flags & NLM_F_MULTI;
-			EXTLOG_TRACE_FMT(logger, "send_netlink_inet_diag_req: processing {} nlmsghdr, type = {}, flags = {:#x}, {}",
+			EXTLOG_TRACE_FMT(logger, "recv_netlink_inet_diag_msg: processing {} nlmsghdr, type = {}, flags = {:#x}, {}",
 			                 nmsg++, netlink_msghdr->nlmsg_type, netlink_msghdr->nlmsg_flags, multipart ? "multipart" : "not multipart");
 			
 			if(netlink_msghdr->nlmsg_type == NLMSG_DONE)
 			{
 				assert(not multipart);
-				EXTLOG_TRACE_FMT(logger, "send_netlink_inet_diag_req: got NLMSG_DONE, breaking");
+				EXTLOG_TRACE_FMT(logger, "recv_netlink_inet_diag_msg: got NLMSG_DONE, breaking");
 				break;
 			}
 
 			if(netlink_msghdr->nlmsg_type == NLMSG_ERROR)
 			{
 				auto errmsg = static_cast<nlmsgerr *>(NLMSG_DATA(netlink_msghdr));
-				EXTLOG_DEBUG_FMT(logger, "send_netlink_inet_diag_req: got NLMSG_ERROR, nlmsgerr->error = {}", errmsg->error);
+				EXTLOG_DEBUG_FMT(logger, "recv_netlink_inet_diag_msg: got NLMSG_ERROR, nlmsgerr->error = {}", errmsg->error);
 				
 				int err = errmsg->error;
 				if (err == 0) // it's an ack, through we didn't request acks, skip it
@@ -305,9 +315,170 @@ static void recv_netlink_inet_diag_msg(socket_handle_type netlink_sock, std::fun
 	EXTLOG_TRACE_STR(logger, "recv_netlink_inet_diag_msg: no more messages");
 }
 
-auto find_counter_socket_inode_netlink(socket_handle_type sock, ext::log::logger * logger) -> std::tuple<uid_t, ino64_t>
+template <class Type>
+class netlink_range :
+        public ext::input_range_facade<netlink_range<Type>, Type *, Type *>
 {
-	return find_counter_socket(find_socket_inode_netlink, "find_counter_socket_inode_netlink", sock, logger);
+	using self_type = netlink_range;
+	using base_type = ext::input_range_facade<self_type, Type *, Type *>;
+	
+private:
+	socket_handle_type netlink_sock;
+	
+	unsigned state : sizeof(unsigned) * CHAR_BIT - 3;
+	unsigned exhausted : 1;
+	unsigned multipart : 1;
+	unsigned truncated : 1;
+	
+	unsigned nmsg;
+	unsigned msglen;
+	
+	nlmsghdr * netlink_msghdr;
+	Type * diag_msg;
+	
+	std::vector<uint8_t> recv_buffer;
+	ext::log::logger * logger = nullptr;
+	std::string_view logging_prefix;
+	
+public:
+	bool empty() const { return exhausted; }
+	auto front() const { return diag_msg; }
+	void pop_front();
+	
+public:
+	netlink_range(socket_handle_type netlink_sock, ext::log::logger * logger = nullptr, std::string_view logging_prefix = "");
+};
+
+template <class Type>
+netlink_range<Type>::netlink_range(socket_handle_type netlink_sock, ext::log::logger * logger, std::string_view logging_prefix)
+    : netlink_sock(netlink_sock), logger(logger), logging_prefix(logging_prefix)
+{
+	state = 0;
+	exhausted = 0;
+	multipart = 0;
+	truncated = 0;
+	nmsg = 0;
+	msglen = 0;
+	
+	constexpr unsigned socket_buffer_size = 4096;
+	recv_buffer.resize(socket_buffer_size);
+	
+	pop_front();
+}
+
+template <class Type>
+void netlink_range<Type>::pop_front()
+{
+	constexpr unsigned STATE_START = 0;
+	constexpr unsigned STATE_NEXT_MESSAGE = 1;
+	constexpr unsigned STATE_EXHAUSTED = 2;
+	
+	switch (state) 
+	{
+		default: EXT_UNREACHABLE();
+		case STATE_START:;
+		do
+		{
+			// The messages can (probably will for dump cases) come as multiple netlink messages.
+			// NOTE: from man 7 netlink:
+			//   Netlink is not a reliable protocol. It tries its best to deliver a message to its destination(s), but may drop messages when an out-of-memory condition or other error occurs.
+			//   For reliable transfer the sender can request an acknowledgement from the receiver by setting the NLM_F_ACK flag.
+			//   An acknowledgement is an NLMSG_ERROR packet with the error field set to 0.  The application must generate acknowledgements for received messages itself.
+			//   The kernel tries to send an NLMSG_ERROR message for every failed packet.  A user process should follow this convention too.
+			//
+			//   However, reliable transmissions from kernel to user are impossible in any case.
+			//   The kernel can't send a netlink message if the socket buffer is full:
+			//   the message will be dropped and the kernel and the user-space process will no longer have the same view of kernel state.
+			//   It is up to the application to detect when this happens (via the ENOBUFS error returned by recvmsg(2)) and resynchronize.
+			
+			// recvmsg stuff
+			struct iovec iov;
+			struct sockaddr_nl netlink_addr;
+			struct msghdr netlink_msg;
+			
+			iov = { recv_buffer.data(), recv_buffer.size() };
+		
+			netlink_msg = {
+				.msg_name = &netlink_addr,
+				.msg_namelen = sizeof netlink_addr,
+				.msg_iov = &iov, .msg_iovlen = 1,
+			};
+			
+			multipart = false;
+			
+			//wait_readable(netlink_sock, 500);
+			EXTLOG_TRACE_FMT(logger, "{}receiving reply", logging_prefix);
+			// with MSG_TRUNC recvbytes would return full size of datagram even with truncating 
+			unsigned recvbytes;
+			recvbytes = recvmsg(netlink_sock, &netlink_msg, MSG_TRUNC);
+			EXTLOG_TRACE_FMT(logger, "{}received reply, recvbytes = {}, errno = {}", logging_prefix, recvbytes, ext::format_errno(errno));
+			if (recvbytes < 0) ext::throw_last_errno("{}recvmsg failed", logging_prefix);
+			
+			truncated = netlink_msg.msg_flags & MSG_TRUNC;
+			msglen = truncated ? recv_buffer.size() : recvbytes;
+			netlink_msghdr = reinterpret_cast<nlmsghdr *>(recv_buffer.data());
+			assert(not truncated);
+			
+			// default multipart loop
+			while(NLMSG_OK(netlink_msghdr, msglen))
+			{
+				multipart = netlink_msghdr->nlmsg_flags & NLM_F_MULTI;
+				EXTLOG_TRACE_FMT(logger, "{}processing {} nlmsghdr, type = {}, flags = {:#x}, {}", logging_prefix,
+				                 nmsg++, netlink_msghdr->nlmsg_type, netlink_msghdr->nlmsg_flags, multipart ? "multipart" : "not multipart");
+				
+				if(netlink_msghdr->nlmsg_type == NLMSG_DONE)
+				{
+					assert(not multipart);
+					EXTLOG_TRACE_FMT(logger, "{}got NLMSG_DONE, breaking", logging_prefix);
+					exhausted = true; state = STATE_EXHAUSTED;
+					return;
+				}
+	
+				if(netlink_msghdr->nlmsg_type == NLMSG_ERROR)
+				{
+					auto errmsg = static_cast<nlmsgerr *>(NLMSG_DATA(netlink_msghdr));
+					EXTLOG_DEBUG_FMT(logger, "{}got NLMSG_ERROR, nlmsgerr->error = {}", logging_prefix, errmsg->error);
+					
+					int err = errmsg->error;
+					if (err == 0) // it's an ack, through we didn't request acks, skip it
+						continue;
+					
+					// it looks that error will contain errno, but negative,
+					// -2(-ENOENT) is returned when no record found(more study needed)
+					if (err == -ENOENT) // not a error, just not found
+					{
+						EXTLOG_DEBUG_FMT(logger, "{}ENOENT result", logging_prefix);
+						exhausted = true; state = STATE_EXHAUSTED;
+						return;
+					}
+					
+					std::error_code errc(-err, std::system_category());
+					throw std::system_error(errc, fmt::format("{}received error message", logging_prefix));
+				}
+				else if (netlink_msghdr->nlmsg_type == SOCK_DIAG_BY_FAMILY)
+				{
+					diag_msg = static_cast<Type *>(NLMSG_DATA(netlink_msghdr));
+					//auto rtalen = netlink_msghdr->nlmsg_len - NLMSG_LENGTH(sizeof(*incoming_msg));
+					
+					state = STATE_NEXT_MESSAGE;
+					return;
+					
+					case STATE_NEXT_MESSAGE:;
+					netlink_msghdr = NLMSG_NEXT(netlink_msghdr, msglen);
+				}
+				else
+				{
+					EXTLOG_DEBUG_FMT(logger, "{}got unexpected message, type = {}, expected = {}, skipping", logging_prefix, netlink_msghdr->nlmsg_type, SOCK_DIAG_BY_FAMILY);
+				}
+			}
+			
+		} while (multipart);
+		
+		EXTLOG_TRACE_FMT(logger, "{}no more messages", logging_prefix);
+		
+		exhausted = true; state = STATE_EXHAUSTED;
+		case STATE_EXHAUSTED:;
+	}
 }
 
 auto find_socket_inode_netlink(int proto, const sockaddr * sock_addr, const sockaddr * peer_addr, ext::log::logger * logger) -> std::tuple<uid_t, ino64_t>
@@ -339,8 +510,8 @@ auto find_socket_inode_netlink(int proto, const sockaddr * sock_addr, const sock
 	};
 	
 	
-	uid_t uid = -1;
-	ino64_t inode = -1;
+	uid_t uid = 0;
+	ino64_t inode = 0;
 	auto process = [sock_addr, peer_addr, &uid, &inode](inet_diag_msg * msg)
 	{
 		bool matched;
@@ -352,8 +523,8 @@ auto find_socket_inode_netlink(int proto, const sockaddr * sock_addr, const sock
 			constexpr unsigned ipv4_size = sizeof(in_addr::s_addr);
 			static_assert (ipv4_size == 4);
 			
-			matched = std::memcmp(&sock_addr_in->sin_addr.s_addr, msg->id.idiag_dst, ipv4_size) == 0 and sock_addr_in->sin_port == msg->id.idiag_dport
-			      and std::memcmp(&peer_addr_in->sin_addr.s_addr, msg->id.idiag_src, ipv4_size) == 0 and peer_addr_in->sin_port == msg->id.idiag_sport;
+			matched = std::memcmp(&sock_addr_in->sin_addr.s_addr, msg->id.idiag_src, ipv4_size) == 0 and sock_addr_in->sin_port == msg->id.idiag_sport
+			      and std::memcmp(&peer_addr_in->sin_addr.s_addr, msg->id.idiag_dst, ipv4_size) == 0 and peer_addr_in->sin_port == msg->id.idiag_dport;
 		}
 		else if (sock_addr->sa_family == AF_INET6)
 		{
@@ -363,8 +534,8 @@ auto find_socket_inode_netlink(int proto, const sockaddr * sock_addr, const sock
 			constexpr unsigned ipv6_size = sizeof(in6_addr::s6_addr);
 			static_assert (ipv6_size == 16);
 			
-			matched = std::memcmp(sock_addr_in->sin6_addr.s6_addr, msg->id.idiag_dst, ipv6_size) == 0 and sock_addr_in->sin6_port == msg->id.idiag_dport
-			      and std::memcmp(peer_addr_in->sin6_addr.s6_addr, msg->id.idiag_src, ipv6_size) == 0 and peer_addr_in->sin6_port == msg->id.idiag_sport;
+			matched = std::memcmp(sock_addr_in->sin6_addr.s6_addr, msg->id.idiag_src, ipv6_size) == 0 and sock_addr_in->sin6_port == msg->id.idiag_sport
+			      and std::memcmp(peer_addr_in->sin6_addr.s6_addr, msg->id.idiag_dst, ipv6_size) == 0 and peer_addr_in->sin6_port == msg->id.idiag_dport;
 		}
 		else
 		{
@@ -380,12 +551,24 @@ auto find_socket_inode_netlink(int proto, const sockaddr * sock_addr, const sock
 		return matched;
 	};
 	
-	send_netlink_inet_diag_req(netlink_sock, proto, peer_addr, sock_addr, logger);
-	recv_netlink_inet_diag_msg(netlink_sock, process, logger);
+	send_netlink_inet_diag_req(netlink_sock, proto, sock_addr, peer_addr, logger);
+	//recv_netlink_inet_diag_msg(netlink_sock, process, logger);
+	for (auto * msg : netlink_range<inet_diag_msg>(netlink_sock, logger, "recv_netlink_inet_diag_msg: "))
+		if (process(msg)) break;
 	
 	EXTLOG_DEBUG_FMT(logger, "find_socket_inode_netlink: searching inode result: uid = {}, inode = {}", uid, inode);
 	
 	return std::make_tuple(uid, inode);
+}
+
+auto find_socket_inode_netlink(socket_handle_type sock, ext::log::logger * logger) -> std::tuple<uid_t, ino64_t>
+{
+	return find_socket_pid_helper(find_socket_inode_netlink, "find_socket_inode_netlink", sock, logger);
+}
+
+auto find_socket_counter_inode_netlink(int sock, ext::log::logger * logger) -> std::tuple<uid_t, ino64_t>
+{
+	return find_socket_counter_pid_helper(find_socket_inode_netlink, "find_socket_counter_inode_netlink", sock, logger);
 }
 
 #endif // BOOST_OS_LINUX
