@@ -5,6 +5,7 @@ import "qbs-utils/imports/dmlys/BuildUtils" as BuildUtils
 Project
 {
 	property bool portable: false
+	property bool with_qt: false
 	
 	qbsSearchPaths: ["qbs-utils", "qbs-extensions"]
 	
@@ -49,7 +50,16 @@ Project
 			name: "tests"
 		}
 	}
-
+	
+	SubProject
+	{
+		condition: with_qt
+		filePath: "testdev-qt.qbs"
+		Properties {
+			name: "testdev-qt"
+		}
+	}
+	
 	CppApplication
 	{
 		Depends { name: "netlib" }

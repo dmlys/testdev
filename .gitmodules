@@ -16,3 +16,6 @@
 [submodule "xercesc-utils"]
 	path = xercesc-utils
 	url = ../xercesc-utils.git
+[submodule "QtTools"]
+	path = QtTools
+	url = ../QtTools.git
