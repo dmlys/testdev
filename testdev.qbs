@@ -137,9 +137,6 @@ Project
 		files: [
 			"main.cpp",
 			"netstat/*",
-			//"future-fiber.*",
-			//"unix-domain-socket.cpp",
-			//"socket-rest-subscriber-main.cpp",
 		]
 	}
 	

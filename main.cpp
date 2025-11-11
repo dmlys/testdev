@@ -1,92 +1,99 @@
+#include <cstdint>
+#include <cassert>
 #include <csignal>
-#include <type_traits>
-#include <random>
-#include <functional>
-#include <algorithm>
-
-#include <vector>
-#include <chrono>
-#include <string>
-#include <string_view>
 
 #include <iostream>
-#include <sstream>
-#include <fstream>
-#include <filesystem>
+
+#include <set>
+#include <string>
+#include <format>
+#include <optional>
 
 #include <fmt/format.h>
-#include <fmt/ostream.h>
+#include <fmt/printf.h>
+#include <fmt/std.h>
+#include <fmt/ranges.h>
 
-#include <ext/itoa.hpp>
-#include <ext/errors.hpp>
+#include <boost/algorithm/string.hpp>
+
 #include <ext/future.hpp>
-#include <ext/thread_pool.hpp>
-#include <ext/cppzlib.hpp>
-
-#include <boost/range.hpp>
-#include <boost/range/as_literal.hpp>
-#include <ext/range.hpp>
+#include <ext/log/logger.hpp>
+#include <ext/net/parse_url.hpp>
+#include <ext/net/http/http_server.hpp>
 #include <ext/filesystem_utils.hpp>
 
-#include <ext/net/socket_stream.hpp>
-#include <ext/net/socket_include.hpp>
-#include <ext/net/http/http_parser.hpp>
-#include <ext/net/http/http_server.hpp>
-#include <ext/net/http/zlib_filter.hpp>
-#include <ext/net/http/cors_filter.hpp>
-//#include <ext/net/http/filesystem_handler.hpp>
-
-//#include <sys/socket.h>
-//#include <netinet/in.h>
-//#include <netinet/tcp.h>
+#include <ext/openssl.hpp>
+#include <openssl/bio.h>
+#include <openssl/x509.h>
 
 
-#include <ext/base64.hpp>
-#include <ext/net/mime/url_encoding.hpp>
+// #include <cstdint>
+// #include <cassert>
+// #include <csignal>
+// #include <type_traits>
+// #include <atomic>
+
+// #include <vector>
+// #include <chrono>
+// #include <string>
+
+// #include <thread>
+// #include <latch>
+// #include <barrier>
 
 
-#include <ext/stream_filtering.hpp>
-#include <ext/stream_filtering/zlib.hpp>
-#include <ext/stream_filtering/basexx.hpp>
+// static void backoff() noexcept
+// {
+// 	std::this_thread::yield(); // there can be better options than yield
+// }
 
-
-//std::atomic_int counter = 0;
-ext::net::http::http_server * g_server = nullptr;
-
-void sig(int)
-{
-	g_server->interrupt();
-}
-
-int main()
-{
-	using namespace std;
-	using namespace chrono;
+// static void lock_ptr(std::atomic_uintptr_t & ptr) noexcept
+// {
+// 	std::uintptr_t val = 0;
+// 	while (not ptr.compare_exchange_weak(val, 0x1u, std::memory_order_acquire, std::memory_order_relaxed))
+// 	{
+// 		val = 0;
+// 		backoff();
+// 	}
 	
-	std::signal(SIGINT, sig);
-	
-	ext::init_future_library();
-	ext::net::init_socket_library();
-	
-	ext::log::ostream_logger logger(clog, ext::log::Info);
-	ext::net::http::http_server server;
-	g_server = &server;
+// 	assert(ptr.load(std::memory_order_relaxed) == 0x1);
+// }
 
-	server.set_logger(&logger);
-	server.set_request_logging_level(ext::log::Trace);
+// static void unlock_ptr(std::atomic_uintptr_t & ptr) noexcept
+// {
+// 	// head is locked
+// 	assert(ptr.load(std::memory_order_relaxed) == 0x1);
+// 	ptr.store(0, std::memory_order_release);
+// }
 
-	server.add_handler("/test", [] { return "test"; });
-	server.add_handler("/stream", [] (std::unique_ptr<std::streambuf> & sb) { return std::move(sb); });
-	
-	//server.add_handler(std::make_unique<ext::net::http::filesystem_handler>("/file", "/home/dima/projects/dmlys/"));
-	
-	server.add_listener(ext::net::listener(8080, AF_INET6));
-	server.add_listener(ext::net::listener(8081, AF_INET6));
 
-	server.join();
+// int main()
+// {
+// 	using namespace std;
+		
+// 	std::atomic_uintptr_t atomic = 0;
+// 	std::latch l(2);
 	
-	return 0;
-}
+// 	auto proc = [](std::atomic_uintptr_t & atomic, std::latch & l)
+// 	{
+// 		l.arrive_and_wait();
+		
+// 		lock_ptr(atomic);
+		
+// 		using namespace std::chrono_literals;
+// 		std::this_thread::sleep_for(1s);
+// 		unlock_ptr(atomic);
+		
+// 	};
+	
+// 	std::thread t1(proc, std::ref(atomic), std::ref(l));
+// 	std::thread t2(proc, std::ref(atomic), std::ref(l));
+	
+// 	t1.join();
+// 	t2.join();
+	
+// 	return 0;
+// }
 
 
 
