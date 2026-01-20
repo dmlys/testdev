@@ -1,5 +1,6 @@
 import qbs
 import qbs.Environment
+import dmlys.BuildUtils
 
 Project
 {
@@ -12,6 +13,7 @@ Project
 	CppApplication
 	{
 		name: "Qt-testdev"
+		condition: false
 		
 		Depends { name: "netlib" }
 		Depends { name: "extlib" }
