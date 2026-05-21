@@ -104,7 +104,7 @@ Project
 				
 				flags = flags.concat([
 					//"-lboost_timer", "-lboost_filesystem",
-					"-lboost_system", "-lboost_thread",
+					"-lboost_thread",
 					//"-lboost_context", "-lboost_fiber",
 					"-lxerces-c",
 					"-lssl", "-lcrypto", "-lz", "-lfmt", "-lstdc++fs",
